@@ -2,92 +2,118 @@
 
 var canvas;
 var gl;
-
 var points = [];
+var subdivisionCount = 5;
+var degrees = 30;
+var showGasket = false;
 
-var NumTimesToSubdivide = 5;
+var vertices = [
+  vec2(-.7, -.7),
+  vec2(0, .7),
+  vec2(.7, -.7)
+];
 
-window.onload = function init()
-{
-    canvas = document.getElementById( "gl-canvas" );
+// Set initialization function
+window.onload = function init() {
 
-    gl = WebGLUtils.setupWebGL( canvas );
-    if ( !gl ) { alert( "WebGL isn't available" ); }
+  canvas = document.getElementById("gl-canvas");
 
-    //
-    //  Initialize our data for the Sierpinski Gasket
-    //
+  gl = WebGLUtils.setupWebGL(canvas);
+  if (!gl) {
+    alert("WebGL isn't available");
+  }
 
-    // First, initialize the corners of our gasket with three points.
+  // Configure WebGL
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
-    var vertices = [
-        vec2( -1, -1 ),
-        vec2(  0,  1 ),
-        vec2(  1, -1 )
-    ];
+  // Load shaders and initialize attribute buffers
+  var program = initShaders(gl, "vertex-shader", "fragment-shader");
+  gl.useProgram(program);
 
-    divideTriangle( vertices[0], vertices[1], vertices[2],
-                    NumTimesToSubdivide);
+  // Initialize GPU buffer
+  var bufferId = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 
-    //
-    //  Configure WebGL
-    //
-    gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 1.0, 1.0, 1.0, 1.0 );
+  // Associate out shader variables with our data buffer
+  var vPosition = gl.getAttribLocation(program, "vPosition");
+  gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vPosition);
 
-    //  Load shaders and initialize attribute buffers
-
-    var program = initShaders( gl, "vertex-shader", "fragment-shader" );
-    gl.useProgram( program );
-
-    // Load the data into the GPU
-
-    var bufferId = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, bufferId );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
-
-    // Associate out shader variables with our data buffer
-
-    var vPosition = gl.getAttribLocation( program, "vPosition" );
-    gl.vertexAttribPointer( vPosition, 2, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vPosition );
-
-    render();
+  updatePoints();
+  render();
 };
 
-function triangle( a, b, c )
-{
-    points.push( a, b, c );
+// Update triangles to be rendered
+function updatePoints() {
+  points = [];
+
+  // Subdivide initial triangle
+  divideTriangle(vertices[0], vertices[1], vertices[2], subdivisionCount);
+
+  // Load the data into the GPU
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 }
 
-function divideTriangle( a, b, c, count )
-{
-
-    // check for end of recursion
-
-    if ( count === 0 ) {
-        triangle( a, b, c );
-    }
-    else {
-
-        //bisect the sides
-
-        var ab = mix( a, b, 0.5 );
-        var ac = mix( a, c, 0.5 );
-        var bc = mix( b, c, 0.5 );
-
-        --count;
-
-        // three new triangles
-
-        divideTriangle( a, ab, ac, count );
-        divideTriangle( c, ac, bc, count );
-        divideTriangle( b, bc, ab, count );
-    }
+// Add triage to points array
+function triangle(a, b, c) {
+  points.push(a, b, c);
 }
 
-function render()
-{
-    gl.clear( gl.COLOR_BUFFER_BIT );
-    gl.drawArrays( gl.TRIANGLES, 0, points.length );
+// Recusively divide triangle coordinates
+function divideTriangle(a, b, c, count) {
+
+  // check for end of subdivision
+  if (count == 0) {
+    triangle(rotate(a), rotate(b), rotate(c));
+  } else {
+    // bisect the sides
+    var ab = mix(a, b, 0.5);
+    var ac = mix(a, c, 0.5);
+    var bc = mix(b, c, 0.5);
+
+    // decrease subdivision count
+    --count;
+
+    // four new triangles
+    divideTriangle(a, ab, ac, count);
+    divideTriangle(c, ac, bc, count);
+    divideTriangle(b, bc, ab, count);
+    if (!showGasket) {
+      divideTriangle(ac, bc, ab, count);
+    }
+  }
+}
+
+// Rotate a vec2 by the global angle 'degrees'
+function rotate(point) {
+  var x = point[0];
+  var y = point[1];
+  var dist = Math.sqrt(x*x + y*y);
+  var theta = dist*degrees*(Math.PI/180);
+
+  return vec2(
+    x*Math.cos(theta)-y*Math.sin(theta),
+    x*Math.sin(theta)+y*Math.cos(theta));
+}
+
+// Render
+function render() {
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLES, 0, points.length);
+}
+
+// Handle updates from user
+function inputUpdate(input) {
+  if (input.id == "steps") {
+    subdivisionCount = input.value;
+    document.getElementById("steps-text").innerHTML = input.value;
+  } else if (input.id == "angle") {
+    degrees = input.value;
+    document.getElementById("angle-text").innerHTML = input.value;
+  } else if (input.id == "gasket") {
+    showGasket = input.checked;
+  }
+  updatePoints();
+  render();
 }

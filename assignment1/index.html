@@ -4,6 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <title>Assignment 1: Tessellation and Twist</title>
 
+  <link rel="stylesheet" href="../common/grid.css"/>
+
   <script id="vertex-shader" type="x-shader/x-vertex">
   attribute vec4 vPosition;
 
@@ -20,7 +22,7 @@
   void
   main()
   {
-    gl_FragColor = vec4( 1.0, 0.5, 0.95, 1.0 );
+    gl_FragColor = vec4( 0.3, 0.3, 0.95, 1.0 );
   }
   </script>
 
@@ -32,17 +34,43 @@
 </head>
 
 <body>
-  <canvas id="gl-canvas" width="512" height="512">
-    Canvas Not Supported!
-  </canvas>
-  <p></p>
-  <form>
-    <label><strong>Subdivision Steps</strong>
-      <input type="number" value="3"></input>
-    </label>
-    <label><strong>Angle</strong>
-      <input type="number" value="0"></input>
-    </label>
-  </form>
+  <div class="container">
+    <div class="first">
+      <canvas id="gl-canvas" width="512" height="512">
+        Canvas Not Supported!
+      </canvas>
+    </div>
+    <div class="first">
+      <h2>Controls</h2>
+    </div>
+
+    <div class="first grid3">
+      <strong>Subdivision (Tessellation)</stong>
+    </div>
+    <div class="grid4">
+      <input id="steps" style="width:100%" type="range" min="0" max="10" value="5" onchange="inputUpdate(this)"></input>
+    </div>
+    <div class="grid4">
+      <span id="steps-text">5</span>
+    </div>
+
+    <div class="first grid3">
+      <strong>Rotation (Twist)</strong>
+    </div>
+    <div class="grid4">
+        <input id="angle" style="width:100%" type="range" min="0" max="180" value="30" onchange="inputUpdate(this)"></input>
+    </div>
+    <div class="grid4">
+      <span id="angle-text">30</span>&deg
+    </div>
+
+    <div class="first grid3">
+      <strong>Sierpinski Gasket</strong>
+    </div>
+    <div class="grid4">
+        <input id="gasket" type="checkbox" onchange="inputUpdate(this)"></input>
+    </div>
+
+  </div>
 </body>
 </html>
