@@ -8,9 +8,9 @@ var degrees = 30;
 var showGasket = false;
 
 var vertices = [
-  vec2(-.7, -.7),
-  vec2(0, .7),
-  vec2(.7, -.7)
+  vec2(-Math.sqrt(3)/2, -1/2),
+  vec2(0, 1),
+  vec2(Math.sqrt(3)/2, -1/2)
 ];
 
 // Set initialization function
