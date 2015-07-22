@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <title>Assignment 2: Painting with the Mouse</title>
 
-  <link rel="stylesheet" href="../common/grid.css"/>
+  <link rel="stylesheet" href="../common/grid.css" />
 
   <script id="vertex-shader" type="x-shader/x-vertex">
-  attribute vec4 vPosition;
-
-  void
-  main()
-  {
-    gl_Position = vPosition;
-  }
+    attribute vec4 vPosition;
+    attribute vec4 vColor;
+    varying vec4 fColor;
+    void main() {
+      gl_Position = vPosition;
+      fColor = vColor;
+      gl_PointSize = 10.0;
+    }
   </script>
 
   <script id="fragment-shader" type="x-shader/x-fragment">
-  precision mediump float;
-
-  void
-  main()
-  {
-    gl_FragColor = vec4( 0.3, 0.3, 0.95, 1.0 );
-  }
+    precision mediump float; 
+    void main() {
+      gl_FragColor = vec4( 0.3, 0.3, 0.95, 1.0 );
+    }
   </script>
 
   <script type="text/javascript" src="../common/webgl-utils.js"></script>
@@ -40,37 +39,12 @@
         Canvas Not Supported!
       </canvas>
     </div>
+
     <div class="first">
       <h2>Controls</h2>
     </div>
 
-    <div class="first grid3">
-      <strong>Subdivision (Tessellation)</stong>
-    </div>
-    <div class="grid4">
-      <input id="steps" style="width:100%" type="range" min="0" max="10" value="5" onchange="inputUpdate(this)"></input>
-    </div>
-    <div class="grid4">
-      <span id="steps-text">5</span>
-    </div>
-
-    <div class="first grid3">
-      <strong>Rotation (Twist)</strong>
-    </div>
-    <div class="grid4">
-        <input id="angle" style="width:100%" type="range" min="0" max="360" value="30" onchange="inputUpdate(this)"></input>
-    </div>
-    <div class="grid4">
-      <span id="angle-text">30</span>&deg
-    </div>
-
-    <div class="first grid3">
-      <strong>Sierpinski Gasket</strong>
-    </div>
-    <div class="grid4">
-        <input id="gasket" type="checkbox" onchange="inputUpdate(this)"></input>
-    </div>
-
   </div>
 </body>
+
 </html>
