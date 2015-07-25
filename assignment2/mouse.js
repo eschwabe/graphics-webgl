@@ -5,7 +5,7 @@ var gl;
 var color = vec4(0.0, 0.0, 0.0, 1.0);
 var colors = [];
 var points = [];
-var points_size = 0;
+var points_index = 0;
 var redraw = false;
 
 // Initialize window
@@ -39,6 +39,7 @@ window.onload = function init() {
   gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vColor);
 
+  lineWidthUpdate();
   colorUpdate();
   render();
 
@@ -68,12 +69,12 @@ window.onload = function init() {
       points.push(computePoint(event, canvas));
       gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-      points_size = points.length-1;
+      points_index = points.length-1;
 
       // Store vertex color
+      colors.push(color);
+      colors.push(color);
       gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-      colors.push(color);
-      colors.push(color);
       gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
     }
   });
@@ -97,7 +98,7 @@ function computePoint(event, canvas) {
 }
 
 // Update line width
-function lineWidthUpdate(event) {
+function lineWidthUpdate() {
   var selectLine = document.getElementById("line-size");
   gl.lineWidth(selectLine.options[selectLine.selectedIndex].value);
 }
@@ -105,7 +106,7 @@ function lineWidthUpdate(event) {
 // Render
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.LINES, 0, points_size);
+  gl.drawArrays(gl.LINES, 0, points_index);
   window.requestAnimFrame(render);
 }
 
@@ -113,7 +114,7 @@ function render() {
 function clearScreen() {
   points = [];
   colors = [];
-  points_size = 0;
+  points_index = 0;
 }
 
 // Update selected color
