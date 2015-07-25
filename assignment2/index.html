@@ -19,7 +19,7 @@
   </script>
 
   <script id="fragment-shader" type="x-shader/x-fragment">
-    precision mediump float; 
+    precision mediump float;
     void main() {
       gl_FragColor = vec4( 0.3, 0.3, 0.95, 1.0 );
     }
@@ -35,13 +35,58 @@
 <body>
   <div class="container">
     <div class="first">
-      <canvas id="gl-canvas" width="512" height="512">
-        Canvas Not Supported!
-      </canvas>
+      <h2>Assignment2: Painting with the Mouse</h2>
+      <h4>Interactive Computer Graphics with WebGL</h4>
     </div>
 
     <div class="first">
-      <h2>Controls</h2>
+      <div class="grid4">
+        <div class="first">
+          <div class="grid1">
+            <strong>Red</strong>
+          </div>
+          <div class="grid3">
+            <input id="range-red" type="range" min="0" max="255"></input>
+          </div>
+        </div>
+
+        <div class="first">
+          <div class="grid1">
+            <strong>Green</strong>
+          </div>
+          <div class="grid3">
+            <input id="range-green" type="range" min="0" max="255"></input>
+          </div>
+        </div>
+
+        <div class="first">
+          <div class="grid1">
+            <strong>Blue</strong>
+          </div>
+          <div class="grid3">
+            <input id="range-blue" type="range" min="0" max="255"></input>
+          </div>
+        </div>
+      </div>
+      <div class="grid4">
+        <div class="first">
+          <div class="grid4">
+            <button>Clear</button>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid4">
+            <div id="color" style="width: 50px; height: 50px; border-style: solid; border-width: 1px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="first">
+      <canvas id="gl-canvas" width="512" height="512" style="border-style: solid; border-width: 2px">
+        Canvas Not Supported!
+      </canvas>
     </div>
 
   </div>
