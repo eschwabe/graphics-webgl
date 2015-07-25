@@ -2,21 +2,11 @@
 
 var canvas;
 var gl;
+var color = vec4(0.0, 0.0, 0.0, 1.0);
 var colors = [];
-var offsets = [];
 var points = [];
 var points_size = 0;
 var redraw = false;
-
-var color_table = [
-  vec4(0.0, 0.0, 0.0, 1.0), // black
-  vec4(1.0, 0.0, 0.0, 1.0), // red
-  vec4(1.0, 1.0, 0.0, 1.0), // yellow
-  vec4(0.0, 1.0, 0.0, 1.0), // green
-  vec4(0.0, 0.0, 1.0, 1.0), // blue
-  vec4(1.0, 0.0, 1.0, 1.0), // magenta
-  vec4(0.0, 1.0, 1.0, 1.0)  // cyan
-];
 
 // Initialize window
 window.onload = function init() {
@@ -51,23 +41,25 @@ window.onload = function init() {
 
   gl.lineWidth(3);
 
+  colorUpdate();
   render();
 
   // Handle mousedown event
   canvas.addEventListener("mousedown", function(event) {
-    redraw = true;
-
     // Start new line segment
-    offsets.push(Math.max(0, points.length-1));
-    points.push(computePoint(event, canvas));
-    colors.push(vec4(color_table[0]));
+    if (!redraw) {
+      points.push(computePoint(event, canvas));
+      colors.push(color);
+      redraw = true;
+    }
   });
 
   // Handle mouseup event
   canvas.addEventListener("mouseup", function(event) {
-    redraw = false;
+    // End line segment
     points.push(computePoint(event, canvas));
-    colors.push(vec4(color_table[0]));
+    colors.push(color);
+    redraw = false;
   });
 
   // Handle mousemove event
@@ -82,12 +74,16 @@ window.onload = function init() {
 
       // Store vertex color
       gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-      colors.push(vec4(color_table[0]));
-      colors.push(vec4(color_table[0]));
+      colors.push(color);
+      colors.push(color);
       gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
     }
   });
 
+  // Handle color input event
+  document.getElementById("range-red").onchange = colorUpdate;
+  document.getElementById("range-green").onchange = colorUpdate;
+  document.getElementById("range-blue").onchange = colorUpdate;
 }
 
 // Compute mouse pointer location from event
@@ -105,4 +101,13 @@ function render() {
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, points_size);
   window.requestAnimFrame(render);
+}
+
+function colorUpdate() {
+  var red = document.getElementById("range-red").value;
+  var green = document.getElementById("range-green").value;
+  var blue = document.getElementById("range-blue").value;
+  var colorbox = document.getElementById("color-box");
+  color = vec4(red/255.0, green/255.0, blue/255.0, 1.0);
+  colorbox.style.backgroundColor = "rgb("+red+","+green+","+blue+")";
 }

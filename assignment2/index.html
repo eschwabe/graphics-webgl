@@ -20,8 +20,9 @@
 
   <script id="fragment-shader" type="x-shader/x-fragment">
     precision mediump float;
+    varying vec4 fColor;
     void main() {
-      gl_FragColor = vec4( 0.3, 0.3, 0.95, 1.0 );
+      gl_FragColor = fColor;
     }
   </script>
 
@@ -36,7 +37,6 @@
   <div class="container">
     <div class="first">
       <h2>Assignment2: Painting with the Mouse</h2>
-      <h4>Interactive Computer Graphics with WebGL</h4>
     </div>
 
     <div class="first">
@@ -76,7 +76,7 @@
         </div>
         <div class="first">
           <div class="grid4">
-            <div id="color" style="width: 50px; height: 50px; border-style: solid; border-width: 1px"></div>
+            <div id="color-box" style="width: 50px; height: 50px; border-style: solid; border-width: 1px"></div>
           </div>
         </div>
       </div>
