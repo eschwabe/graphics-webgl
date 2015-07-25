@@ -103,6 +103,12 @@ function render() {
   window.requestAnimFrame(render);
 }
 
+function clearScreen() {
+  points = [];
+  colors = [];
+  points_size = 0;
+}
+
 function colorUpdate() {
   var red = document.getElementById("range-red").value;
   var green = document.getElementById("range-green").value;
