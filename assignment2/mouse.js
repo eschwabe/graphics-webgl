@@ -39,8 +39,6 @@ window.onload = function init() {
   gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vColor);
 
-  gl.lineWidth(3);
-
   colorUpdate();
   render();
 
@@ -84,6 +82,8 @@ window.onload = function init() {
   document.getElementById("range-red").onchange = colorUpdate;
   document.getElementById("range-green").onchange = colorUpdate;
   document.getElementById("range-blue").onchange = colorUpdate;
+  document.getElementById("range-blue").onchange = colorUpdate;
+  document.getElementById("line-size").onchange = lineWidthUpdate;
 }
 
 // Compute mouse pointer location from event
@@ -96,6 +96,12 @@ function computePoint(event, canvas) {
   return vec2(x,y);
 }
 
+// Update line width
+function lineWidthUpdate(event) {
+  var selectLine = document.getElementById("line-size");
+  gl.lineWidth(selectLine.options[selectLine.selectedIndex].value);
+}
+
 // Render
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -103,12 +109,14 @@ function render() {
   window.requestAnimFrame(render);
 }
 
+// Clear screen
 function clearScreen() {
   points = [];
   colors = [];
   points_size = 0;
 }
 
+// Update selected color
 function colorUpdate() {
   var red = document.getElementById("range-red").value;
   var green = document.getElementById("range-green").value;
