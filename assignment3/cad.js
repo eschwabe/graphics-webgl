@@ -26,7 +26,7 @@ var up = vec3(0.0, 1.0, 0.0);
 
 var modelViewMatrix = lookAt(eye, at, up);
 //var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
-var projectionMatrix = perspective(60.0, 1, -1, 1);
+var projectionMatrix = perspective(45.0, 1, -1, 1);
 var modelViewMatrixLoc, projectionMatrixLoc;
 
 // Initialize window
@@ -114,18 +114,35 @@ function initializeHandlers() {
     objects.push(objectCreate());
     var idx = objects.length-1;
     controlObjectList[controlObjectList.options.length] = new Option('Object '+(idx+1), idx);
+    controlObjectList.value = idx;
+  }
+
+  controlObjectList.onchange = function() {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    controlObjectType.value = objects[idx].type;
+    controlObjectColor.value = objects[idx].color;
+    controlTranslateX.value = objects[idx].translateX;
+    controlTranslateY.value = objects[idx].translateY;
+    controlTranslateZ.value = objects[idx].translateZ;
+    controlRotateX.value = objects[idx].rotateX;
+    controlRotateY.value = objects[idx].rotateY;
+    controlRotateZ.value = objects[idx].rotateZ;
+    controlScaleX.value = objects[idx].scaleX;
+    controlScaleY.value = objects[idx].scaleY;
+    controlScaleZ.value = objects[idx].scaleZ;
   }
 
   controlObjectType.onchange = function(event) {
     var element = event.srcElement;
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    if(element.value == 'sphere') {
+    objects[idx].type = element.value;
+    if(element.value == 0) {
       objects[idx].vBuffer = vBufferSphere;
       objects[idx].numVerticies = numPointsSphere;
-    } else if(element.value == 'cone') {
+    } else if(element.value == 1) {
       objects[idx].vBuffer = vBufferCone;
       objects[idx].numVerticies = numPointsCone;
-    } else if(element.value == 'cylinder') {
+    } else if(element.value == 2) {
       objects[idx].vBuffer = vBufferCylinder;
       objects[idx].numVerticies = numPointsCylinder;
     }
@@ -133,7 +150,7 @@ function initializeHandlers() {
 
   controlObjectColor.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].color = colors[event.srcElement.value];
+    objects[idx].color = event.srcElement.value;
   }
 
   // Translation
@@ -190,9 +207,10 @@ function initializeHandlers() {
 
 function objectCreate() {
   var obj = {
+    type: 0,
     vBuffer: vBufferSphere,
     numVerticies: numPointsSphere,
-    color: colors[0],
+    color: 0,
     translateX: 0,
     translateY: 0,
     translateZ: 0,
@@ -242,7 +260,7 @@ function render() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
     // Set object color
-    gl.uniform4fv(fColor, flatten(objects[i].color));
+    gl.uniform4fv(fColor, flatten(colors[objects[i].color]));
 
     // Set object vertex buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].vBuffer);
