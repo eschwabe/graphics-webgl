@@ -9,20 +9,18 @@
 
   <script id="vertex-shader" type="x-shader/x-vertex">
     attribute vec4 vPosition;
-    attribute vec4 vColor;
-    varying vec4 fColor;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
     void main() {
-      gl_Position = vPosition;
-      fColor = vColor;
+      gl_Position = projectionMatrix*modelViewMatrix*vPosition;
       gl_PointSize = 10.0;
     }
   </script>
 
   <script id="fragment-shader" type="x-shader/x-fragment">
     precision mediump float;
-    varying vec4 fColor;
     void main() {
-      gl_FragColor = fColor;
+      gl_FragColor = vec4(.3, .3, .3, 1);
     }
   </script>
 
@@ -38,67 +36,6 @@
     <div class="first">
       <h2>Assignment3: Geometric CAD</h2>
     </div>
-
-    <div class="first">
-      <div class="grid4">
-        <div class="first">
-          <div class="grid1">
-            <strong>Red</strong>
-          </div>
-          <div class="grid3">
-            <input id="range-red" style="width: 100%;" type="range" min="0" max="255"></input>
-          </div>
-        </div>
-
-        <div class="first">
-          <div class="grid1">
-            <strong>Green</strong>
-          </div>
-          <div class="grid3">
-            <input id="range-green" style="width: 100%;" type="range" min="0" max="255"></input>
-          </div>
-        </div>
-
-        <div class="first">
-          <div class="grid1">
-            <strong>Blue</strong>
-          </div>
-          <div class="grid3">
-            <input id="range-blue" style="width: 100%;" type="range" min="0" max="255"></input>
-          </div>
-        </div>
-      </div>
-      <div class="grid4">
-        <div class="first">
-          <div class="grid4">
-            <div id="color-box" style="width: 50px; height: 50px; border-style: solid; border-width: 1px"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="first">
-      <div class="grid1">
-        <strong>Size</strong>
-      </div>
-      <div class="grid1">
-        <select id="line-size">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3" selected>3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-        </select>
-      </div>
-      <div class="grid2">
-        <button style="width: 100px;" onclick="clearScreen();">Clear</button>
-      </div>
-    </div>
-
 
     <div class="first">
       <canvas id="gl-canvas" width="512" height="512" style="border-style: solid; border-width: 2px">
