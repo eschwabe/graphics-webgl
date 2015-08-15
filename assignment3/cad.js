@@ -16,11 +16,11 @@ var colors = [
   vec4( 0.5, 0.5, 0.5, 1.0 ),  // grey
 ];
 
-var numPointsCone, numPointsCylinder, numPointsSphere;
-var vBufferCone, vBufferCylinder, vBufferSphere;
+var numPointsGrid, numPointsCone, numPointsCylinder, numPointsSphere;
+var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
 var vPosition, fColor;
 
-var eye = vec3(0.0, 5.0, 15.0);
+var eye = vec3(0.0, 10.0, 25.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
@@ -48,6 +48,12 @@ window.onload = function init() {
   gl.useProgram(program);
 
   // Create object vertices
+  vBufferGrid = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
+  var grid = baseGrid();
+  numPointsGrid = grid.length;
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(grid), gl.STATIC_DRAW);
+
   vBufferCone = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCone);
   var cone = unitCone();
@@ -115,6 +121,7 @@ function initializeHandlers() {
     var idx = objects.length-1;
     controlObjectList[controlObjectList.options.length] = new Option('Object '+(idx+1), idx);
     controlObjectList.value = idx;
+    controlObjectList.onchange();
   }
 
   controlObjectList.onchange = function() {
@@ -243,10 +250,10 @@ function objectCreate() {
 
 // Render
 var theta = 0.0
-var phi = 0.0;
 function render() {
   theta += 0.005;
-  phi += 0.008;
+  var r = 25;
+  eye = vec3(r*Math.cos(theta), 10, r*Math.sin(theta));
   //eye = vec3(Math.sin(theta)*Math.cos(phi),
   //  Math.sin(theta)*Math.sin(phi), Math.cos(theta));
 
@@ -254,6 +261,14 @@ function render() {
 
   var cameraMatrix = lookAt(eye, at , up);
 
+  // Draw Grid
+  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(cameraMatrix));
+  gl.uniform4fv(fColor, flatten(colors[0]));
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
+  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+  gl.drawArrays(gl.LINES, 0, numPointsGrid);
+
+  // Draw Objects
   for(var i = 0; i < objects.length; ++i) {
     // Set object transformation
     modelViewMatrix = mult(cameraMatrix, objects[i].matTransform);
@@ -269,6 +284,21 @@ function render() {
   }
 
   window.requestAnimFrame(render);
+}
+
+// Generate lines for the base grid (10x10)
+function baseGrid() {
+  var grid = [];
+  var size = 10;
+  for(var x = -size; x <= size; ++x) {
+    grid.push(vec4(x, 0, -size));
+    grid.push(vec4(x, 0, size));
+  }
+  for(var z = -size; z <= size; ++z) {
+    grid.push(vec4(-size, 0, z));
+    grid.push(vec4(size, 0, z));
+  }
+  return grid;
 }
 
 // Generate lines for a unit-size cylinder
