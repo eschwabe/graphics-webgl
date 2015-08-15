@@ -20,7 +20,12 @@ var numPointsGrid, numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
 var vPosition, fColor;
 
-var eye = vec3(0.0, 10.0, 25.0);
+var cameraRotate = true;
+var cameraAngle = 0.0;
+var cameraRadius = 25;
+var cameraHeight = 10.0;
+
+var eye = vec3(cameraRadius, cameraHeight, cameraRadius);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
@@ -99,6 +104,7 @@ window.onload = function init() {
 // Control elements
 function initializeHandlers() {
 
+  var controlCameraRotation = document.getElementById("camera-rotate");
   var controlObjectAdd = document.getElementById("object-add");
   var controlObjectList = document.getElementById("object-list");
   var controlObjectType = document.getElementById("object-type");
@@ -115,6 +121,10 @@ function initializeHandlers() {
   var controlScaleX = document.getElementById("scale-x");
   var controlScaleY = document.getElementById("scale-y");
   var controlScaleZ = document.getElementById("scale-z");
+
+  controlCameraRotation.onclick = function() {
+    cameraRotate = !cameraRotate;
+  }
 
   controlObjectAdd.onclick = function() {
     objects.push(objectCreate());
@@ -249,17 +259,16 @@ function objectCreate() {
 }
 
 // Render
-var theta = 0.0
 function render() {
-  theta += 0.005;
-  var r = 25;
-  eye = vec3(r*Math.cos(theta), 10, r*Math.sin(theta));
-  //eye = vec3(Math.sin(theta)*Math.cos(phi),
-  //  Math.sin(theta)*Math.sin(phi), Math.cos(theta));
 
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+  // Update camera
+  if(cameraRotate) { cameraAngle += 0.005; }
+  if(cameraAngle > 2*Math.PI) { cameraAngle = 0.0; }
+  eye = vec3(cameraRadius*Math.cos(cameraAngle), 10, cameraRadius*Math.sin(cameraAngle));
   var cameraMatrix = lookAt(eye, at , up);
+
+  // Clear screen
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Draw Grid
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(cameraMatrix));
