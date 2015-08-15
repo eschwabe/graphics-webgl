@@ -20,12 +20,13 @@ var numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferCone, vBufferCylinder, vBufferSphere;
 var vPosition, fColor;
 
-var eye = vec3(0.0, 0.0, 5.0);
+var eye = vec3(0.0, 5.0, 15.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
 var modelViewMatrix = lookAt(eye, at, up);
-var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -5, 5);
+//var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
+var projectionMatrix = perspective(60.0, 1, -1, 1);
 var modelViewMatrixLoc, projectionMatrixLoc;
 
 // Initialize window
@@ -83,14 +84,115 @@ window.onload = function init() {
   // Initialize first object
   objects.push(objectCreate());
 
+  // Implement handlers for controls
+  initializeHandlers();
+
   render();
+}
+
+// Control elements
+function initializeHandlers() {
+
+  var controlObjectAdd = document.getElementById("object-add");
+  var controlObjectList = document.getElementById("object-list");
+  var controlObjectType = document.getElementById("object-type");
+  var controlObjectColor = document.getElementById("object-color");
+
+  var controlTranslateX = document.getElementById("translate-x");
+  var controlTranslateY = document.getElementById("translate-y");
+  var controlTranslateZ = document.getElementById("translate-z");
+
+  var controlRotateX = document.getElementById("rotate-x");
+  var controlRotateY = document.getElementById("rotate-y");
+  var controlRotateZ = document.getElementById("rotate-z");
+
+  var controlScaleX = document.getElementById("scale-x");
+  var controlScaleY = document.getElementById("scale-y");
+  var controlScaleZ = document.getElementById("scale-z");
+
+  controlObjectAdd.onclick = function() {
+    objects.push(objectCreate());
+    var idx = objects.length-1;
+    controlObjectList[controlObjectList.options.length] = new Option('Object '+(idx+1), idx);
+  }
+
+  controlObjectType.onchange = function(event) {
+    var element = event.srcElement;
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    if(element.value == 'sphere') {
+      objects[idx].vBuffer = vBufferSphere;
+      objects[idx].numVerticies = numPointsSphere;
+    } else if(element.value == 'cone') {
+      objects[idx].vBuffer = vBufferCone;
+      objects[idx].numVerticies = numPointsCone;
+    } else if(element.value == 'cylinder') {
+      objects[idx].vBuffer = vBufferCylinder;
+      objects[idx].numVerticies = numPointsCylinder;
+    }
+  }
+
+  controlObjectColor.onchange = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].color = colors[event.srcElement.value];
+  }
+
+  // Translation
+  controlTranslateX.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].translateX = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+  controlTranslateY.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].translateY = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+  controlTranslateZ.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].translateZ = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+
+  // Rotation
+  controlRotateX.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].rotateX = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+  controlRotateY.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].rotateY = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+  controlRotateZ.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].rotateZ = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+
+  // Scale
+  controlScaleX.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].scaleX = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+  controlScaleY.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].scaleY = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
+  controlScaleZ.oninput = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    objects[idx].scaleZ = event.srcElement.value;
+    objects[idx].updateTransform();
+  }
 }
 
 function objectCreate() {
   var obj = {
     vBuffer: vBufferSphere,
     numVerticies: numPointsSphere,
-    color: colors[1],
+    color: colors[0],
     translateX: 0,
     translateY: 0,
     translateZ: 0,
@@ -154,7 +256,7 @@ function render() {
 // Generate lines for a unit-size cylinder
 function unitCylinder() {
   var cylinder = [];
-  var divisions = 15;
+  var divisions = 30;
   var r = 0.5;
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
@@ -181,7 +283,7 @@ function unitCylinder() {
 // Generate lines for a unit-size cone
 function unitCone() {
   var cone = [];
-  var divisions = 15;
+  var divisions = 30;
   var r = 0.5;
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
@@ -232,7 +334,7 @@ function divideTriangle(points, a, b, c, count) {
 
 // Generate a unit-size sphere shape
 function unitSphere() {
-  var divisions = 4;
+  var divisions = 5;
   var sphere = [];
 
   var va = vec4(0.0, 0.0, -1.0);
