@@ -13,14 +13,14 @@ var colors = [
   vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
   vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
   vec4( 0.0, 1.0, 1.0, 1.0 ),  // cyan
-  vec4( 1.0, 1.0, 1.0, 1.0 ),  // white
+  vec4( 0.5, 0.5, 0.5, 1.0 ),  // grey
 ];
 
 var numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferCone, vBufferCylinder, vBufferSphere;
 var vPosition, fColor;
 
-var eye = vec3(0.0, 0.0, 10.0);
+var eye = vec3(0.0, 0.0, 5.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
@@ -127,8 +127,8 @@ var phi = 0.0;
 function render() {
   theta += 0.005;
   phi += 0.008;
-  eye = vec3(Math.sin(theta)*Math.cos(phi),
-    Math.sin(theta)*Math.sin(phi), Math.cos(theta));
+  //eye = vec3(Math.sin(theta)*Math.cos(phi),
+  //  Math.sin(theta)*Math.sin(phi), Math.cos(theta));
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
