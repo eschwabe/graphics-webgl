@@ -2,18 +2,31 @@
 
 var canvas;
 var gl;
-var color = vec4(0.0, 0.0, 0.0, 1.0);
-var colors = [];
+
+var objects = [];
+
+var colors = [
+  vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
+  vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
+  vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
+  vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
+  vec4( 0.0, 0.0, 1.0, 1.0 ),  // blue
+  vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
+  vec4( 0.0, 1.0, 1.0, 1.0 ),  // cyan
+  vec4( 1.0, 1.0, 1.0, 1.0 ),  // white
+];
 
 var numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferCone, vBufferCylinder, vBufferSphere;
-var vPosition, vColor;
+var vPosition, fColor;
 
-var modelViewMatrix, projectionMatrix;
-var modelViewMatrixLoc, projectionMatrixLoc;
-var eye = vec3(1.0, 0.0, 0.0);
+var eye = vec3(0.0, 0.0, 10.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
+
+var modelViewMatrix = lookAt(eye, at, up);
+var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -5, 5);
+var modelViewMatrixLoc, projectionMatrixLoc;
 
 // Initialize window
 window.onload = function init() {
@@ -52,39 +65,61 @@ window.onload = function init() {
   numPointsSphere = sphere.length;
   gl.bufferData(gl.ARRAY_BUFFER, flatten(sphere), gl.STATIC_DRAW);
 
+  // Associate position vertices with shader input
   vPosition = gl.getAttribLocation(program, "vPosition");
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
 
-  // Compute model, view, projection matricies
+  // Get location for model and projection matrices
   modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
   projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
-
-  modelViewMatrix = lookAt(eye, at, up);
-  projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -5, 5);
 
   gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
   gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
-/*
-  var cBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+  // Setup color attribute
+  fColor = gl.getUniformLocation(program, "fColor");
 
-  var vColor = gl.getAttribLocation(program, "vColor");
-  gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vColor);
-  */
-
+  // Initialize first object
+  objects.push(objectCreate());
 
   render();
 }
 
-var matT = translate(0, 0, 1);
-var matR = rotate(30, [1, 0, 0]);
-var matS = scalem(2, 2, 2);
+function objectCreate() {
+  var obj = {
+    vBuffer: vBufferSphere,
+    numVerticies: numPointsSphere,
+    color: colors[1],
+    translateX: 0,
+    translateY: 0,
+    translateZ: 0,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    scaleX: 1,
+    scaleY: 1,
+    scaleZ: 1,
+    matTransform: mat4(),
+    updateTransform: function () {
+      var matT = translate(obj.translateX, obj.translateY, obj.translateZ);
+      var matRx = rotate(obj.rotateX, [1, 0, 0]);
+      var matRy = rotate(obj.rotateY, [0, 1, 0]);
+      var matRz = rotate(obj.rotateZ, [0, 0, 1]);
+      var matS = scalem(obj.scaleX, obj.scaleY, obj.scaleZ);
 
-var m = mult(matS, matR);
-m = mult(matT, m);
+      var tmp = mat4();
+      tmp = mult(matRx, tmp);
+      tmp = mult(matRy, tmp);
+      tmp = mult(matRz, tmp);
+      tmp = mult(matS, tmp);
+      tmp = mult(matT, tmp);
+      obj.matTransform = tmp;
+    }
+  };
+  obj.updateTransform();
+  return obj;
+}
 
 // Render
 var theta = 0.0
@@ -95,28 +130,28 @@ function render() {
   eye = vec3(Math.sin(theta)*Math.cos(phi),
     Math.sin(theta)*Math.sin(phi), Math.cos(theta));
 
-  modelViewMatrix = lookAt(eye, at , up);
-  modelViewMatrix = mult(modelViewMatrix, m);
-
-  gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
-
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCone);
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.drawArrays(gl.LINES, 0, numPointsCone);
+  var cameraMatrix = lookAt(eye, at , up);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCylinder);
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.drawArrays(gl.LINES, 0, numPointsCylinder);
+  for(var i = 0; i < objects.length; ++i) {
+    // Set object transformation
+    modelViewMatrix = mult(cameraMatrix, objects[i].matTransform);
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferSphere);
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-  gl.drawArrays(gl.LINES, 0, numPointsSphere);
+    // Set object color
+    gl.uniform4fv(fColor, flatten(objects[i].color));
+
+    // Set object vertex buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].vBuffer);
+    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.LINES, 0, objects[i].numVerticies);
+  }
 
   window.requestAnimFrame(render);
 }
 
+// Generate lines for a unit-size cylinder
 function unitCylinder() {
   var cylinder = [];
   var divisions = 15;
@@ -143,6 +178,7 @@ function unitCylinder() {
   return cylinder;
 }
 
+// Generate lines for a unit-size cone
 function unitCone() {
   var cone = [];
   var divisions = 15;

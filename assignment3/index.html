@@ -13,14 +13,14 @@
     uniform mat4 projectionMatrix;
     void main() {
       gl_Position = projectionMatrix*modelViewMatrix*vPosition;
-      gl_PointSize = 10.0;
     }
   </script>
 
   <script id="fragment-shader" type="x-shader/x-fragment">
     precision mediump float;
+    uniform vec4 fColor;
     void main() {
-      gl_FragColor = vec4(.3, .3, .3, 1);
+      gl_FragColor = fColor;
     }
   </script>
 
@@ -143,7 +143,7 @@
             <strong>X</strong>
           </div>
           <div class="grid2">
-            <input id="scale-x" style="width: 100%;" type="range" min="-10" max="10"></input>
+            <input id="scale-x" style="width: 100%;" type="range" min="1" max="10"></input>
           </div>
         </div>
         <div class="first">
@@ -151,7 +151,7 @@
             <strong>Y</strong>
           </div>
           <div class="grid2">
-            <input id="scale-y" style="width: 100%;" type="range" min="-10" max="10"></input>
+            <input id="scale-y" style="width: 100%;" type="range" min="1" max="10"></input>
           </div>
         </div>
         <div class="first">
@@ -159,7 +159,7 @@
             <strong>Z</strong>
           </div>
           <div class="grid2">
-            <input id="scale-z" style="width: 100%;" type="range" min="-10" max="10"></input>
+            <input id="scale-z" style="width: 100%;" type="range" min="1" max="10"></input>
           </div>
         </div>
 
