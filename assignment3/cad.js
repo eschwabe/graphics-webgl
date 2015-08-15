@@ -11,7 +11,7 @@ var vPosition, vColor;
 
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
-var eye = vec3(1.0, 1.0, 1.0);
+var eye = vec3(1.0, 0.0, 0.0);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
@@ -61,7 +61,7 @@ window.onload = function init() {
   projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
 
   modelViewMatrix = lookAt(eye, at, up);
-  projectionMatrix = ortho(-2.0, 2.0, -2.0, 2.0, -4, 4);
+  projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -5, 5);
 
   gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
   gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
@@ -75,8 +75,16 @@ window.onload = function init() {
   gl.enableVertexAttribArray(vColor);
   */
 
+
   render();
 }
+
+var matT = translate(0, 0, 1);
+var matR = rotate(30, [1, 0, 0]);
+var matS = scalem(2, 2, 2);
+
+var m = mult(matS, matR);
+m = mult(matT, m);
 
 // Render
 var theta = 0.0
@@ -88,6 +96,7 @@ function render() {
     Math.sin(theta)*Math.sin(phi), Math.cos(theta));
 
   modelViewMatrix = lookAt(eye, at , up);
+  modelViewMatrix = mult(modelViewMatrix, m);
 
   gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
 

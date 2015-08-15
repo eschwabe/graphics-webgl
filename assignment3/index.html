@@ -38,9 +38,140 @@
     </div>
 
     <div class="first">
-      <canvas id="gl-canvas" width="512" height="512" style="border-style: solid; border-width: 2px">
-        Canvas Not Supported!
-      </canvas>
+    </div>
+
+    <div class="first">
+      <!-- Controls -->
+      <div class="grid3">
+        <h2>Controls</h2>
+        <div class="first">
+          <div class="grid3">
+            <button>Add New Object</button>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid3">
+            <select>
+              <option>Object 1</option>
+              <option>Object 2</option>
+              <option>Object 3</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="padding-bottom: 20px;"></div>
+
+        <h3>Attributes</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>Shape</strong>
+          </div>
+          <div class="grid2">
+            <select>
+              <option>Sphere</option>
+              <option>Cone</option>
+              <option>Cylinder</option>
+            </select>
+          </div>
+          <div class="grid1">
+            <strong>Color</strong>
+          </div>
+          <div class="grid2">
+            <select>
+              <option>Blue</option>
+              <option>Red</option>
+              <option>Green</option>
+            </select>
+          </div>
+        </div>
+
+        <h3>Translate</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>X</strong>
+          </div>
+          <div class="grid2">
+            <input id="translate-x" style="width: 100%;" type="range" min="-10" max="10"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Y</strong>
+          </div>
+          <div class="grid2">
+            <input id="translate-y" style="width: 100%;" type="range" min="-10" max="10"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Z</strong>
+          </div>
+          <div class="grid2">
+            <input id="translate-z" style="width: 100%;" type="range" min="-10" max="10"></input>
+          </div>
+        </div>
+
+        <h3>Rotate</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>X</strong>
+          </div>
+          <div class="grid2">
+            <input id="rotate-x" style="width: 100%;" type="range" min="-180" max="180"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Y</strong>
+          </div>
+          <div class="grid2">
+            <input id="rotate-y" style="width: 100%;" type="range" min="-180" max="180"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Z</strong>
+          </div>
+          <div class="grid2">
+            <input id="rotate-z" style="width: 100%;" type="range" min="-180" max="180"></input>
+          </div>
+        </div>
+
+        <h3>Scale</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>X</strong>
+          </div>
+          <div class="grid2">
+            <input id="scale-x" style="width: 100%;" type="range" min="-10" max="10"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Y</strong>
+          </div>
+          <div class="grid2">
+            <input id="scale-y" style="width: 100%;" type="range" min="-10" max="10"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Z</strong>
+          </div>
+          <div class="grid2">
+            <input id="scale-z" style="width: 100%;" type="range" min="-10" max="10"></input>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Display -->
+      <div class="grid9">
+        <canvas id="gl-canvas" width="1024" height="1024" style="border-style: solid; border-width: 2px">
+          Canvas Not Supported!
+        </canvas>
+      </div>
+
     </div>
 
   </div>
