@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title>Assignment 4: Adding Lighting</title>
+
+  <link rel="stylesheet" href="../common/grid.css" />
+
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 vPosition;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
+    void main() {
+      gl_Position = projectionMatrix*modelViewMatrix*vPosition;
+    }
+  </script>
+
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    uniform vec4 fColor;
+    void main() {
+      gl_FragColor = fColor;
+    }
+  </script>
+
+  <script type="text/javascript" src="../common/webgl-utils.js"></script>
+  <script type="text/javascript" src="../common/initShaders.js"></script>
+  <script type="text/javascript" src="../common/MV.js"></script>
+  <script type="text/javascript" src="cad.js"></script>
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="first">
+      <h2>Assignment 4: Adding Lighting</h2>
+    </div>
+
+    <div class="first">
+    </div>
+
+    <div class="first">
+      <!-- Controls -->
+      <div class="grid3">
+        <h2>Controls</h2>
+        <div class="first">
+          <div class="grid3">
+            <button id="camera-rotate">Camera Rotation</button>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid3">
+            <button id="object-add">Add New Object</button>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid3">
+            <select id="object-list">
+              <option value="0">Object 1</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="padding-bottom: 40px;"></div>
+
+        <h3>Attributes</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>Shape</strong>
+          </div>
+          <div class="grid2">
+            <select id="object-type">
+              <option value="0">Sphere</option>
+              <option value="1">Cone</option>
+              <option value="2">Cylinder</option>
+            </select>
+          </div>
+          <div class="grid1">
+            <strong>Color</strong>
+          </div>
+          <div class="grid2">
+            <select id="object-color">
+              <option value="0">Black</option>
+              <option value="1">Red</option>
+              <option value="2">Yellow</option>
+              <option value="3">Green</option>
+              <option value="4">Blue</option>
+              <option value="5">Magenta</option>
+              <option value="6">Cyan</option>
+              <option value="7">Grey</option>
+            </select>
+          </div>
+        </div>
+
+        <h3>Translate</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>X</strong>
+          </div>
+          <div class="grid2">
+            <input id="translate-x" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Y</strong>
+          </div>
+          <div class="grid2">
+            <input id="translate-y" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Z</strong>
+          </div>
+          <div class="grid2">
+            <input id="translate-z" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+          </div>
+        </div>
+
+        <h3>Rotate</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>X</strong>
+          </div>
+          <div class="grid2">
+            <input id="rotate-x" style="width: 100%;" type="range" min="-180" max="180"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Y</strong>
+          </div>
+          <div class="grid2">
+            <input id="rotate-y" style="width: 100%;" type="range" min="-180" max="180"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Z</strong>
+          </div>
+          <div class="grid2">
+            <input id="rotate-z" style="width: 100%;" type="range" min="-180" max="180"></input>
+          </div>
+        </div>
+
+        <h3>Scale</h3>
+        <div class="first">
+          <div class="grid1">
+            <strong>X</strong>
+          </div>
+          <div class="grid2">
+            <input id="scale-x" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Y</strong>
+          </div>
+          <div class="grid2">
+            <input id="scale-y" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+          </div>
+        </div>
+        <div class="first">
+          <div class="grid1">
+            <strong>Z</strong>
+          </div>
+          <div class="grid2">
+            <input id="scale-z" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Display -->
+      <div class="grid9">
+        <canvas id="gl-canvas" width="1024" height="1024" style="border-style: solid; border-width: 2px">
+          Canvas Not Supported!
+        </canvas>
+      </div>
+
+    </div>
+
+  </div>
+</body>
+
+</html>
