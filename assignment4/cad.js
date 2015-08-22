@@ -31,7 +31,7 @@ var up = vec3(0.0, 1.0, 0.0);
 
 var modelViewMatrix = lookAt(eye, at, up);
 //var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
-var projectionMatrix = perspective(45.0, 1, -1, 1);
+var projectionMatrix = perspective(45.0, 1, 1, -1);
 var modelViewMatrixLoc, projectionMatrixLoc;
 
 // Initialize window
@@ -289,7 +289,7 @@ function render() {
     // Set object vertex buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].vBuffer);
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-    gl.drawArrays(gl.LINES, 0, objects[i].numVerticies);
+    gl.drawArrays(gl.TRIANGLES, 0, objects[i].numVerticies);
   }
 
   window.requestAnimFrame(render);
@@ -310,7 +310,7 @@ function baseGrid() {
   return grid;
 }
 
-// Generate lines for a unit-size cylinder
+// Generate triangles for a unit-size cylinder
 function unitCylinder() {
   var cylinder = [];
   var divisions = 30;
@@ -318,26 +318,27 @@ function unitCylinder() {
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
     var ntheta = (i+1)/divisions * 2*Math.PI;
-    // center to cone base
+    // cone base center to edge
     cylinder.push(vec4(0, 0, 0));
     cylinder.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    // cone base to next cone base
-    cylinder.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
     cylinder.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
-    // top center to cone top
+    // cone top center to edge
     cylinder.push(vec4(0, r*2, 0));
     cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
-    // cone top to next cone top
+    cylinder.push(vec4(r*Math.cos(ntheta), r*2, r*Math.sin(ntheta)));
+    // cone base edge to cone top
+    cylinder.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
+    cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
+    // cone top edge to cone bottom
     cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
     cylinder.push(vec4(r*Math.cos(ntheta), r*2, r*Math.sin(ntheta)));
-    // cone base to top
-    cylinder.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
   }
   return cylinder;
 }
 
-// Generate lines for a unit-size cone
+// Generate triangles for a unit-size cone
 function unitCone() {
   var cone = [];
   var divisions = 30;
@@ -345,14 +346,13 @@ function unitCone() {
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
     var ntheta = (i+1)/divisions * 2*Math.PI;
-    // center to cone base
+    // cone base center to edge
     cone.push(vec4(0, 0, 0));
     cone.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    // cone base to next cone base
+    cone.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
+    // cone base edge to cone top
     cone.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
     cone.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
-    // cone base to top
-    cone.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
     cone.push(vec4(0, r*2, 0));
   }
   return cone;
@@ -362,10 +362,7 @@ function unitCone() {
 function triangle(points, a, b, c) {
   points.push(a);
   points.push(b);
-  points.push(b);
   points.push(c);
-  points.push(c);
-  points.push(a);
 }
 
 // Divide triangle to form sphere
