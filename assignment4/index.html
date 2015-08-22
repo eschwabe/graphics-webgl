@@ -10,7 +10,8 @@
   <script id="vertex-shader" type="x-shader/x-vertex">
     attribute vec4 vPosition;
     uniform vec4 vColor;
-    uniform mat4 modelViewMatrix;
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
     uniform mat4 projectionMatrix;
     uniform vec4 ambientProduct, diffuseProduct, specularProduct;
     uniform vec4 lightPosition;
@@ -20,43 +21,43 @@
     void main() {
 
       // Assume normal is same as untransformed vertex position
-      vec4 vNormal = vPosition;
+      vec4 vNormal = normalize(vPosition);
+      vNormal.w = 0.0;
 
-      // pos is vertex position in eye coordinates
-      vec3 pos = (modelViewMatrix * vPosition).xyz;
+      // transform vertex position and normal into eye coordinates
+      vec3 P = (modelMatrix * vPosition).xyz;
+      vec3 N = normalize(modelMatrix * vNormal).xyz;
 
       // vector from vertex position to light source
-      vec3 L = normalize(lightPosition.xyz - pos);
+      vec3 L = normalize(lightPosition.xyz - P);
 
       // vector from the vertex position to the eye
-      vec3 E = -normalize(pos);
+      vec3 E = normalize(vPosition * viewMatrix * modelMatrix).xyz;
 
       // halfway vector
       vec3 H = normalize(L + E);
-
-      // transform vertex normal into eye coordinates
-      vec3 N = normalize(modelViewMatrix * vNormal).xyz;
 
       // Set ambient light
       vec4 ambient = ambientProduct * vColor;
 
       // Compute diffuse light
       float Kd = max( dot(L, N), 0.0 );
-      vec4  diffuse = Kd*diffuseProduct;
+      vec4 diffuse = Kd*diffuseProduct;
 
       // Compute specular light
       float Ks = pow( max(dot(N, H), 0.0), shininess );
       vec4 specular = Ks * specularProduct;
-      if( dot(L, N) < 0.0 ) {
-        specular = vec4(0.0, 0.0, 0.0, 1.0);
-      }
+      //if( dot(L, N) < 0.0 ) {
+      //  specular = vec4(0.0, 0.0, 0.0, 1.0);
+      //}
 
       // Compute color
       fColor = ambient + diffuse + specular;
       fColor.a = 1.0;
+      fColor = normalize(fColor);
 
       // Compute vertex position
-      gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+      gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
     }
   </script>
 

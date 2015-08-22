@@ -29,14 +29,13 @@ var eye = vec3(cameraRadius, cameraHeight, cameraRadius);
 var at = vec3(0.0, 0.0, 0.0);
 var up = vec3(0.0, 1.0, 0.0);
 
-var modelViewMatrix = lookAt(eye, at, up);
 //var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
 var projectionMatrix = perspective(45.0, 1, 1, -1);
-var modelViewMatrixLoc, projectionMatrixLoc;
+var modelMatrixLoc, viewMatrixLoc, projectionMatrixLoc;
 
 var lightPosition = vec4(25.0, 25.0, 25.0, 0.0);
-var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
-var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+var lightAmbient = vec4(0.3, 0.3, 0.3, 1.0);
+var lightDiffuse = vec4(0.8, 0.8, 0.8, 1.0);
 var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0)
 var materialShininess = 20.0;
 
@@ -89,8 +88,8 @@ window.onload = function init() {
   gl.enableVertexAttribArray(vPosition);
 
   // Set model and projection matrices
-  modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
-  gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+  viewMatrixLoc = gl.getUniformLocation( program, "viewMatrix" );
+  modelMatrixLoc = gl.getUniformLocation( program, "modelMatrix" );
   projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
   gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
@@ -283,12 +282,13 @@ function render() {
   if(cameraAngle > 2*Math.PI) { cameraAngle = 0.0; }
   eye = vec3(cameraRadius*Math.cos(cameraAngle), 10, cameraRadius*Math.sin(cameraAngle));
   var cameraMatrix = lookAt(eye, at , up);
+  gl.uniformMatrix4fv(viewMatrixLoc, false, flatten(cameraMatrix));
 
   // Clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   // Draw Grid
-  gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(cameraMatrix));
+  gl.uniformMatrix4fv(modelMatrixLoc, false, flatten(mat4()));
   gl.uniform4fv(vColor, flatten(colors[0]));
   gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
@@ -297,8 +297,7 @@ function render() {
   // Draw Objects
   for(var i = 0; i < objects.length; ++i) {
     // Set object transformation
-    modelViewMatrix = mult(cameraMatrix, objects[i].matTransform);
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.uniformMatrix4fv(modelMatrixLoc, false, flatten(objects[i].matTransform));
 
     // Set object color
     gl.uniform4fv(vColor, flatten(colors[objects[i].color]));
@@ -405,7 +404,7 @@ function divideTriangle(points, a, b, c, count) {
 
 // Generate a unit-size sphere shape
 function unitSphere() {
-  var divisions = 5;
+  var divisions = 6;
   var sphere = [];
 
   var va = vec4(0.0, 0.0, -1.0);
