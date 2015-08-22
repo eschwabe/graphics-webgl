@@ -150,7 +150,7 @@ function initializeHandlers() {
   }
 
   controlObjectType.onchange = function(event) {
-    var element = event.srcElement;
+    var element = event.target;
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].type = element.value;
     if(element.value == 0) {
@@ -167,57 +167,57 @@ function initializeHandlers() {
 
   controlObjectColor.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].color = event.srcElement.value;
+    objects[idx].color = event.target.value;
   }
 
   // Translation
   controlTranslateX.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].translateX = event.srcElement.value;
+    objects[idx].translateX = event.target.value;
     objects[idx].updateTransform();
   }
   controlTranslateY.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].translateY = event.srcElement.value;
+    objects[idx].translateY = event.target.value;
     objects[idx].updateTransform();
   }
   controlTranslateZ.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].translateZ = event.srcElement.value;
+    objects[idx].translateZ = event.target.value;
     objects[idx].updateTransform();
   }
 
   // Rotation
   controlRotateX.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].rotateX = event.srcElement.value;
+    objects[idx].rotateX = event.target.value;
     objects[idx].updateTransform();
   }
   controlRotateY.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].rotateY = event.srcElement.value;
+    objects[idx].rotateY = event.target.value;
     objects[idx].updateTransform();
   }
   controlRotateZ.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].rotateZ = event.srcElement.value;
+    objects[idx].rotateZ = event.target.value;
     objects[idx].updateTransform();
   }
 
   // Scale
   controlScaleX.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].scaleX = event.srcElement.value;
+    objects[idx].scaleX = event.target.value;
     objects[idx].updateTransform();
   }
   controlScaleY.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].scaleY = event.srcElement.value;
+    objects[idx].scaleY = event.target.value;
     objects[idx].updateTransform();
   }
   controlScaleZ.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    objects[idx].scaleZ = event.srcElement.value;
+    objects[idx].scaleZ = event.target.value;
     objects[idx].updateTransform();
   }
 }
