@@ -18,7 +18,7 @@ var colors = [
 
 var numPointsGrid, numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
-var vPosition, fColor;
+var vPosition, vColor;
 
 var cameraRotate = true;
 var cameraAngle = 0.0;
@@ -33,6 +33,12 @@ var modelViewMatrix = lookAt(eye, at, up);
 //var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
 var projectionMatrix = perspective(45.0, 1, 1, -1);
 var modelViewMatrixLoc, projectionMatrixLoc;
+
+var lightPosition = vec4(25.0, 25.0, 25.0, 0.0);
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0);
+var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
+var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0)
+var materialShininess = 20.0;
 
 // Initialize window
 window.onload = function init() {
@@ -82,15 +88,26 @@ window.onload = function init() {
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
 
-  // Get location for model and projection matrices
+  // Set model and projection matrices
   modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
-  projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
-
   gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+  projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
   gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
+  // Set lighting attributes
+  var ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
+  gl.uniform4fv(ambientProductLoc, flatten(lightAmbient));
+  var diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+  gl.uniform4fv(diffuseProductLoc, flatten(lightDiffuse));
+  var specularProductLoc = gl.getUniformLocation(program, "specularProduct");
+  gl.uniform4fv(specularProductLoc, flatten(lightSpecular));
+  var lightPositionLoc = gl.getUniformLocation(program, "lightPosition");
+  gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
+  var shininessLoc = gl.getUniformLocation(program, "shininess");
+  gl.uniform1f(shininessLoc, materialShininess);
+
   // Setup color attribute
-  fColor = gl.getUniformLocation(program, "fColor");
+  vColor = gl.getUniformLocation(program, "vColor");
 
   // Initialize first object
   objects.push(objectCreate());
@@ -272,7 +289,7 @@ function render() {
 
   // Draw Grid
   gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(cameraMatrix));
-  gl.uniform4fv(fColor, flatten(colors[0]));
+  gl.uniform4fv(vColor, flatten(colors[0]));
   gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.LINES, 0, numPointsGrid);
@@ -284,7 +301,7 @@ function render() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
 
     // Set object color
-    gl.uniform4fv(fColor, flatten(colors[objects[i].color]));
+    gl.uniform4fv(vColor, flatten(colors[objects[i].color]));
 
     // Set object vertex buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].vBuffer);
