@@ -10,29 +10,30 @@
   <script id="vertex-shader" type="x-shader/x-vertex">
     attribute vec4 vPosition;
     uniform vec4 vColor;
+    uniform vec4 cameraPosition;
     uniform mat4 modelMatrix;
     uniform mat4 viewMatrix;
     uniform mat4 projectionMatrix;
-    uniform vec4 ambientProduct, diffuseProduct, specularProduct;
-    uniform vec4 lightPosition;
+    uniform vec4 ambientProduct1, diffuseProduct1, specularProduct1;
+    uniform vec4 lightPosition1;
     uniform float shininess;
     varying vec4 fColor;
 
-    void main() {
-
-      // Assume normal is same as untransformed vertex position
-      vec4 vNormal = normalize(vPosition);
-      vNormal.w = 0.0;
-
-      // transform vertex position and normal into eye coordinates
-      vec3 P = (modelMatrix * vPosition).xyz;
-      vec3 N = normalize(modelMatrix * vNormal).xyz;
+    // Compute color component for a single light source
+    vec4 computeLightComponent(
+      vec3 P,
+      vec3 N,
+      vec4 lightPosition,
+      vec4 ambientProduct,
+      vec4 diffuseProduct,
+      vec4 specularProduct) {
 
       // vector from vertex position to light source
       vec3 L = normalize(lightPosition.xyz - P);
 
       // vector from the vertex position to the eye
-      vec3 E = normalize(vPosition * viewMatrix * modelMatrix).xyz;
+      ///vec3 E = normalize(vPosition * viewMatrix * modelMatrix).xyz;
+      vec3 E = normalize(cameraPosition.xyz - P);
 
       // halfway vector
       vec3 H = normalize(L + E);
@@ -47,17 +48,30 @@
       // Compute specular light
       float Ks = pow( max(dot(N, H), 0.0), shininess );
       vec4 specular = Ks * specularProduct;
-      //if( dot(L, N) < 0.0 ) {
-      //  specular = vec4(0.0, 0.0, 0.0, 1.0);
-      //}
 
       // Compute color
-      fColor = ambient + diffuse + specular;
-      fColor.a = 1.0;
-      fColor = normalize(fColor);
+      vec4 color = ambient + diffuse + specular;
+      color.a = 1.0;
+      color = normalize(color);
+
+      return color;
+    }
+
+    void main() {
+
+      // Assume normal is same as untransformed vertex position
+      vec4 vNormal = normalize(vPosition);
+      vNormal.w = 0.0;
+
+      // transform vertex position and normal into model coordinates
+      vec3 P = (modelMatrix * vPosition).xyz;
+      vec3 N = normalize(modelMatrix * vNormal).xyz;
 
       // Compute vertex position
       gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
+
+      // Compute each color component and sum
+      fColor = computeLightComponent(P, N, lightPosition1, ambientProduct1, diffuseProduct1, specularProduct1);
     }
   </script>
 

@@ -32,6 +32,7 @@ var up = vec3(0.0, 1.0, 0.0);
 //var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
 var projectionMatrix = perspective(45.0, 1, 1, -1);
 var modelMatrixLoc, viewMatrixLoc, projectionMatrixLoc;
+var cameraPositionLoc;
 
 var lightPosition = vec4(25.0, 25.0, 25.0, 0.0);
 var lightAmbient = vec4(0.3, 0.3, 0.3, 1.0);
@@ -88,19 +89,20 @@ window.onload = function init() {
   gl.enableVertexAttribArray(vPosition);
 
   // Set model and projection matrices
+  cameraPositionLoc = gl.getUniformLocation(program, "cameraPosition");
   viewMatrixLoc = gl.getUniformLocation( program, "viewMatrix" );
   modelMatrixLoc = gl.getUniformLocation( program, "modelMatrix" );
   projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
   gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
   // Set lighting attributes
-  var ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
+  var ambientProductLoc = gl.getUniformLocation(program, "ambientProduct1");
   gl.uniform4fv(ambientProductLoc, flatten(lightAmbient));
-  var diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+  var diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct1");
   gl.uniform4fv(diffuseProductLoc, flatten(lightDiffuse));
-  var specularProductLoc = gl.getUniformLocation(program, "specularProduct");
+  var specularProductLoc = gl.getUniformLocation(program, "specularProduct1");
   gl.uniform4fv(specularProductLoc, flatten(lightSpecular));
-  var lightPositionLoc = gl.getUniformLocation(program, "lightPosition");
+  var lightPositionLoc = gl.getUniformLocation(program, "lightPosition1");
   gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
   var shininessLoc = gl.getUniformLocation(program, "shininess");
   gl.uniform1f(shininessLoc, materialShininess);
@@ -262,10 +264,10 @@ function objectCreate() {
       var matS = scalem(obj.scaleX, obj.scaleY, obj.scaleZ);
 
       var tmp = mat4();
+      tmp = mult(matS, tmp);
       tmp = mult(matRx, tmp);
       tmp = mult(matRy, tmp);
       tmp = mult(matRz, tmp);
-      tmp = mult(matS, tmp);
       tmp = mult(matT, tmp);
       obj.matTransform = tmp;
     }
@@ -283,6 +285,7 @@ function render() {
   eye = vec3(cameraRadius*Math.cos(cameraAngle), 10, cameraRadius*Math.sin(cameraAngle));
   var cameraMatrix = lookAt(eye, at , up);
   gl.uniformMatrix4fv(viewMatrixLoc, false, flatten(cameraMatrix));
+  gl.uniform4fv(cameraPositionLoc, flatten(vec4(eye)));
 
   // Clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -404,7 +407,7 @@ function divideTriangle(points, a, b, c, count) {
 
 // Generate a unit-size sphere shape
 function unitSphere() {
-  var divisions = 6;
+  var divisions = 5;
   var sphere = [];
 
   var va = vec4(0.0, 0.0, -1.0);
