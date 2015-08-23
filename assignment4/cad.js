@@ -3,8 +3,7 @@
 var canvas;
 var gl;
 
-var objects = [];
-
+// Supported colors
 var colors = [
   vec4( 0.1, 0.1, 0.1, 1.0 ),  // black
   vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
@@ -17,6 +16,7 @@ var colors = [
 ];
 
 // Object variables
+var objects = [];
 var numPointsGrid, numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
 var vPosition, vColor;
@@ -24,17 +24,14 @@ var vPosition, vColor;
 // Transformation matrices
 var projectionMatrix = perspective(45.0, 1, 1, -1);
 var modelMatrixLoc, viewMatrixLoc, projectionMatrixLoc;
-var cameraPositionLoc;
 
-var lightPosition = vec4(25.0, 25.0, 25.0, 0.0);
-var lightAmbient = vec4(0.3, 0.3, 0.3, 1.0);
-var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
-var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0)
-var materialShininess = 30.0;
-
-// Create camera object and update function
+// Camera objects and functions
 var camera = cameraCreate();
+var cameraPositionLoc;
 var displayCameraUpdate = function() {};
+
+// Lights
+var lights = [ lightCreate(), lightCreate() ];
 
 // Initialize window
 window.onload = function init() {
@@ -92,16 +89,24 @@ window.onload = function init() {
   gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
   // Set lighting attributes
-  var ambientProductLoc = gl.getUniformLocation(program, "ambientProduct1");
-  gl.uniform4fv(ambientProductLoc, flatten(lightAmbient));
-  var diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct1");
-  gl.uniform4fv(diffuseProductLoc, flatten(lightDiffuse));
-  var specularProductLoc = gl.getUniformLocation(program, "specularProduct1");
-  gl.uniform4fv(specularProductLoc, flatten(lightSpecular));
-  var lightPositionLoc = gl.getUniformLocation(program, "lightPosition1");
-  gl.uniform4fv(lightPositionLoc, flatten(lightPosition));
+  var ambientProductLoc = gl.getUniformLocation(program, "ambientProduct");
+  gl.uniform4fv(ambientProductLoc, flatten(lights[0].ambient));
+  var diffuseProductLoc = gl.getUniformLocation(program, "diffuseProduct");
+  gl.uniform4fv(diffuseProductLoc, flatten(lights[0].diffuse));
+  var specularProductLoc = gl.getUniformLocation(program, "specularProduct");
+  gl.uniform4fv(specularProductLoc, flatten(lights[0].specular));
   var shininessLoc = gl.getUniformLocation(program, "shininess");
-  gl.uniform1f(shininessLoc, materialShininess);
+  gl.uniform1f(shininessLoc, lights[0].materialShininess);
+
+  lights[0].positionLoc = gl.getUniformLocation(program, "lightPosition1");
+  gl.uniform4fv(lights[0].positionLoc, flatten(lights[0].position));
+  lights[1].positionLoc = gl.getUniformLocation(program, "lightPosition2");
+  gl.uniform4fv(lights[1].positionLoc, flatten(lights[1].position));
+
+  lights[0].enabledLoc = gl.getUniformLocation(program, "lightEnabled1");
+  gl.uniform1i(lights[0].enabledLoc, lights[0].enabled);
+  lights[1].enabledLoc = gl.getUniformLocation(program, "lightEnabled2");
+  gl.uniform1i(lights[1].enabledLoc, lights[1].enabled);
 
   // Setup color attribute
   vColor = gl.getUniformLocation(program, "vColor");
@@ -140,33 +145,40 @@ function initializeHandlers() {
   var controlScaleY = document.getElementById("scale-y");
   var controlScaleZ = document.getElementById("scale-z");
 
+  var controlLightList = document.getElementById("light-list");
+  var controlLightEnable = document.getElementById("light-enabled");
+  var controlLightX = document.getElementById("light-x");
+  var controlLightY = document.getElementById("light-y");
+  var controlLightZ = document.getElementById("light-z");
+
+  // Camera
+  displayCameraUpdate = function() {
+    controlCameraRotation.value = camera.rotation;
+  };
   controlCameraAutoRotation.onclick = function() {
     camera.autoRotate = !camera.autoRotate;
-  }
-
+  };
   controlCameraRotation.oninput = function(event) {
     camera.rotation = parseFloat(event.target.value);
     camera.updatePosition();
-  }
-
+  };
   controlCameraRadius.oninput = function(event) {
     camera.radius = parseFloat(event.target.value);
     camera.updatePosition();
-  }
-
+  };
   controlCameraAngle.oninput = function(event) {
     camera.angle = parseFloat(event.target.value);
     camera.updatePosition();
-  }
+  };
 
+  // Objects
   controlObjectAdd.onclick = function() {
     objects.push(objectCreate());
     var idx = objects.length-1;
     controlObjectList[controlObjectList.options.length] = new Option('Object '+(idx+1), idx);
     controlObjectList.value = idx;
     controlObjectList.onchange();
-  }
-
+  };
   controlObjectList.onchange = function() {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     controlObjectType.value = objects[idx].type;
@@ -180,8 +192,7 @@ function initializeHandlers() {
     controlScaleX.value = objects[idx].scaleX;
     controlScaleY.value = objects[idx].scaleY;
     controlScaleZ.value = objects[idx].scaleZ;
-  }
-
+  };
   controlObjectType.onchange = function(event) {
     var element = event.target;
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
@@ -196,67 +207,95 @@ function initializeHandlers() {
       objects[idx].vBuffer = vBufferCylinder;
       objects[idx].numVerticies = numPointsCylinder;
     }
-  }
-
+  };
   controlObjectColor.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].color = event.target.value;
-  }
+  };
 
   // Translation
   controlTranslateX.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].translateX = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
   controlTranslateY.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].translateY = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
   controlTranslateZ.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].translateZ = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
 
   // Rotation
   controlRotateX.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].rotateX = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
   controlRotateY.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].rotateY = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
   controlRotateZ.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].rotateZ = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
 
   // Scale
   controlScaleX.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].scaleX = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
   controlScaleY.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].scaleY = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
   controlScaleZ.oninput = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].scaleZ = event.target.value;
     objects[idx].updateTransform();
-  }
+  };
 
-  displayCameraUpdate = function() {
-    controlCameraRotation.value = camera.rotation;
-  }
+  // Lights
+  controlLightList.onchange = function(event) {
+    var idx = controlLightList[controlLightList.selectedIndex].value;
+    controlLightEnable.checked = lights[idx].enabled;
+    controlLightX.value = lights[idx].position[0];
+    controlLightY.value = lights[idx].position[1];
+    controlLightZ.value = lights[idx].position[2];
+  };
+  controlLightEnable.onclick = function() {
+    var idx = controlLightList[controlLightList.selectedIndex].value;
+    lights[idx].enabled = event.target.checked;
+    gl.uniform1i(lights[idx].enabledLoc, lights[idx].enabled);
+  };
+  controlLightX.oninput = function(event) {
+    var idx = controlLightList[controlLightList.selectedIndex].value;
+    lights[idx].position[0] = event.target.value;
+    gl.uniform4fv(lights[idx].positionLoc, flatten(lights[idx].position));
+    lights[idx].updateTransform();
+  };
+  controlLightY.oninput = function(event) {
+    var idx = controlLightList[controlLightList.selectedIndex].value;
+    lights[idx].position[1] = event.target.value;
+    gl.uniform4fv(lights[idx].positionLoc, flatten(lights[idx].position));
+    lights[idx].updateTransform();
+  };
+  controlLightZ.oninput = function(event) {
+    var idx = controlLightList[controlLightList.selectedIndex].value;
+    lights[idx].position[2] = event.target.value;
+    gl.uniform4fv(lights[idx].positionLoc, flatten(lights[idx].position));
+    lights[idx].updateTransform();
+  };
+
 }
 
 function cameraCreate() {
@@ -283,6 +322,28 @@ function cameraCreate() {
   }
   camera.updatePosition();
   return camera;
+}
+
+function lightCreate() {
+  var light = {
+    enabled: true,
+    ambient: vec4(0.2, 0.2, 0.2, 1.0),
+    diffuse: vec4(1.0, 1.0, 1.0, 1.0),
+    specular: vec4(1.0, 1.0, 1.0, 1.0),
+    materialShininess: 40.0,
+    position: vec4(25.0, 25.0, 25.0, 0.0),
+    positionLoc: null,
+    enabledLoc: null,
+    objectColor: 2,
+    matTransform: mat4(),
+    updateTransform: function () {
+      var matT = translate(light.position[0], light.position[1], light.position[2]);
+      var matS = scalem(0.25, 0.25, 0.25);
+      light.matTransform = mult(matT, matS);
+    }
+  };
+  light.updateTransform();
+  return light;
 }
 
 function objectCreate() {
@@ -343,6 +404,22 @@ function render() {
   gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.LINES, 0, numPointsGrid);
+
+  // Draw Lights
+  for(var i = 0; i < lights.length; ++i) {
+    if(lights[i].enabled) {
+      // Set object transformation
+      gl.uniformMatrix4fv(modelMatrixLoc, false, flatten(lights[i].matTransform));
+
+      // Set object color
+      gl.uniform4fv(vColor, flatten(colors[lights[i].objectColor]));
+
+      // Set object vertex buffer
+      gl.bindBuffer(gl.ARRAY_BUFFER, vBufferSphere);
+      gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, numPointsSphere);
+    }
+  }
 
   // Draw Objects
   for(var i = 0; i < objects.length; ++i) {

@@ -14,8 +14,9 @@
     uniform mat4 modelMatrix;
     uniform mat4 viewMatrix;
     uniform mat4 projectionMatrix;
-    uniform vec4 ambientProduct1, diffuseProduct1, specularProduct1;
-    uniform vec4 lightPosition1;
+    uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+    uniform vec4 lightPosition1, lightPosition2;
+    uniform int lightEnabled1, lightEnabled2;
     uniform float shininess;
     varying vec4 fColor;
 
@@ -23,10 +24,7 @@
     vec4 computeLightComponent(
       vec3 P,
       vec3 N,
-      vec4 lightPosition,
-      vec4 ambientProduct,
-      vec4 diffuseProduct,
-      vec4 specularProduct) {
+      vec4 lightPosition) {
 
       // vector from vertex position to light source
       vec3 L = normalize(lightPosition.xyz - P);
@@ -52,7 +50,6 @@
       // Compute color
       vec4 color = ambient + diffuse + specular;
       color.a = 1.0;
-      color = normalize(color);
 
       return color;
     }
@@ -71,7 +68,15 @@
       gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
 
       // Compute each color component and sum
-      fColor = computeLightComponent(P, N, lightPosition1, ambientProduct1, diffuseProduct1, specularProduct1);
+      vec4 lightColor1 = vec4(0.1,0.1,0.1,1) * vColor;
+      vec4 lightColor2 = vec4(0.1,0.1,0.1,1) * vColor;
+      if(lightEnabled1 != 0) {
+        lightColor1 = computeLightComponent(P, N, lightPosition1);
+      }
+      if(lightEnabled2 != 0) {
+        lightColor2 = computeLightComponent(P, N, lightPosition2);
+      }
+      fColor = lightColor1 + lightColor2;
     }
   </script>
 
@@ -143,12 +148,18 @@
         <div class="grid4">
           <h3>Objects</h3>
           <div class="first">
-            <div class="grid4">
+            <div class="grid1">
+              <strong>Create</strong>
+            </div>
+            <div class="grid3">
               <button id="object-add">Add New Object</button>
             </div>
           </div>
           <div class="first">
-            <div class="grid4">
+            <div class="grid1">
+              <strong>Select</strong>
+            </div>
+            <div class="grid3">
               <select id="object-list">
                 <option value="0">Object 1</option>
               </select>
@@ -181,7 +192,7 @@
                 <option value="0">Black</option>
                 <option value="1">Red</option>
                 <option value="2">Yellow</option>
-                <option value="3">Green</option>
+                <option value="3" selected>Green</option>
                 <option value="4">Blue</option>
                 <option value="5">Magenta</option>
                 <option value="6">Cyan</option>
@@ -277,6 +288,61 @@
             </div>
             <div class="grid3">
               <input id="scale-z" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lighting -->
+      <div class="first section">
+        <div class="grid4">
+          <h3>Lighting</h3>
+          <div class="first">
+            <div class="grid1">
+              <strong>Select</strong>
+            </div>
+            <div class="grid3">
+              <select id="light-list">
+                <option value="0">Light 1</option>
+                <option value="1">Light 2</option>
+              </select>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Enable</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-enabled" type="checkbox" checked></input>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Position</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-x" style="width: 100%;" type="range" value="25" step="0.1" min="-50" max="50"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-y" style="width: 100%;" type="range" value="25" step="0.1" min="-50" max="50"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-z" style="width: 100%;" type="range" value="25" step="0.1" min="-50" max="50"></input>
             </div>
           </div>
         </div>
