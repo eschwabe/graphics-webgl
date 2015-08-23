@@ -91,157 +91,210 @@
 </head>
 
 <body>
-  <div class="container">
-    <div class="first">
-      <h2>Assignment 4: Adding Lighting</h2>
-    </div>
+<div class="container">
 
-    <div class="first">
-    </div>
+  <h2>Assignment 4: Adding Lighting</h2>
 
-    <div class="first">
-      <!-- Controls -->
-      <div class="grid3">
-        <h2>Controls</h2>
-        <div class="first">
-          <div class="grid3">
-            <button id="camera-rotate">Camera Rotation</button>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid3">
-            <button id="object-add">Add New Object</button>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid3">
-            <select id="object-list">
-              <option value="0">Object 1</option>
-            </select>
-          </div>
-        </div>
+  <div class="first">
+    <!-- Controls -->
+    <div class="border grid4">
 
-        <div style="padding-bottom: 40px;"></div>
-
-        <h3>Attributes</h3>
-        <div class="first">
-          <div class="grid1">
-            <strong>Shape</strong>
+      <!-- Camera -->
+      <div class="first">
+        <div class="grid4">
+          <h3>Camera</h3>
+          <div class="first">
+            <div class="grid1">
+              <strong>Auto</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-auto-rotate" type="checkbox" checked></input>
+            </div>
           </div>
-          <div class="grid2">
-            <select id="object-type">
-              <option value="0">Sphere</option>
-              <option value="1">Cone</option>
-              <option value="2">Cylinder</option>
-            </select>
+          <div class="first">
+            <div class="grid1">
+              <strong>Rotate</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-rotation" style="width: 100%;" type="range" value="0" step="0.1" min="-180" max="180"></input>
+            </div>
           </div>
-          <div class="grid1">
-            <strong>Color</strong>
+          <div class="first">
+            <div class="grid1">
+              <strong>Zoom</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-radius" style="width: 100%;" type="range" value="30" step="0.1" min="5" max="100"></input>
+            </div>
           </div>
-          <div class="grid2">
-            <select id="object-color">
-              <option value="0">Black</option>
-              <option value="1">Red</option>
-              <option value="2">Yellow</option>
-              <option value="3">Green</option>
-              <option value="4">Blue</option>
-              <option value="5">Magenta</option>
-              <option value="6">Cyan</option>
-              <option value="7">Grey</option>
-            </select>
-          </div>
-        </div>
-
-        <h3>Translate</h3>
-        <div class="first">
-          <div class="grid1">
-            <strong>X</strong>
-          </div>
-          <div class="grid2">
-            <input id="translate-x" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+          <div class="first">
+            <div class="grid1">
+              <strong>Angle</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-angle" style="width: 100%;" type="range" value="67" step="0.1" min="0.1" max="179"></input>
+            </div>
           </div>
         </div>
-        <div class="first">
-          <div class="grid1">
-            <strong>Y</strong>
-          </div>
-          <div class="grid2">
-            <input id="translate-y" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid1">
-            <strong>Z</strong>
-          </div>
-          <div class="grid2">
-            <input id="translate-z" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
-          </div>
-        </div>
-
-        <h3>Rotate</h3>
-        <div class="first">
-          <div class="grid1">
-            <strong>X</strong>
-          </div>
-          <div class="grid2">
-            <input id="rotate-x" style="width: 100%;" type="range" min="-180" max="180"></input>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid1">
-            <strong>Y</strong>
-          </div>
-          <div class="grid2">
-            <input id="rotate-y" style="width: 100%;" type="range" min="-180" max="180"></input>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid1">
-            <strong>Z</strong>
-          </div>
-          <div class="grid2">
-            <input id="rotate-z" style="width: 100%;" type="range" min="-180" max="180"></input>
-          </div>
-        </div>
-
-        <h3>Scale</h3>
-        <div class="first">
-          <div class="grid1">
-            <strong>X</strong>
-          </div>
-          <div class="grid2">
-            <input id="scale-x" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid1">
-            <strong>Y</strong>
-          </div>
-          <div class="grid2">
-            <input id="scale-y" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
-          </div>
-        </div>
-        <div class="first">
-          <div class="grid1">
-            <strong>Z</strong>
-          </div>
-          <div class="grid2">
-            <input id="scale-z" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Display -->
-      <div class="grid9">
-        <canvas id="gl-canvas" width="1024" height="1024" style="border-style: solid; border-width: 2px">
-          Canvas Not Supported!
-        </canvas>
+      <!-- Objects -->
+      <div class="first section">
+        <div class="grid4">
+          <h3>Objects</h3>
+          <div class="first">
+            <div class="grid4">
+              <button id="object-add">Add New Object</button>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid4">
+              <select id="object-list">
+                <option value="0">Object 1</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Attributes</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>Shape</strong>
+            </div>
+            <div class="grid3">
+              <select id="object-type">
+                <option value="0">Sphere</option>
+                <option value="1">Cone</option>
+                <option value="2">Cylinder</option>
+              </select>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Color</strong>
+            </div>
+            <div class="grid3">
+              <select id="object-color">
+                <option value="0">Black</option>
+                <option value="1">Red</option>
+                <option value="2">Yellow</option>
+                <option value="3">Green</option>
+                <option value="4">Blue</option>
+                <option value="5">Magenta</option>
+                <option value="6">Cyan</option>
+                <option value="7">Grey</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Translate</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="translate-x" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="translate-y" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="translate-z" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Rotate</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="rotate-x" style="width: 100%;" type="range" min="-180" max="180"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="rotate-y" style="width: 100%;" type="range" min="-180" max="180"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="rotate-z" style="width: 100%;" type="range" min="-180" max="180"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Scale</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="scale-x" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="scale-y" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="scale-z" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- End Controls -->
+    </div>
+
+    <!-- Display -->
+    <div class="grid8">
+      <canvas id="gl-canvas" class="border" width="1024" height="1024">
+        Canvas Not Supported!
+      </canvas>
     </div>
 
   </div>
+</div>
+
 </body>
 
 </html>

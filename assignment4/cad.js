@@ -16,20 +16,12 @@ var colors = [
   vec4( 0.5, 0.5, 0.5, 1.0 ),  // grey
 ];
 
+// Object variables
 var numPointsGrid, numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
 var vPosition, vColor;
 
-var cameraRotate = true;
-var cameraAngle = 0.0;
-var cameraRadius = 25;
-var cameraHeight = 10.0;
-
-var eye = vec3(cameraRadius, cameraHeight, cameraRadius);
-var at = vec3(0.0, 0.0, 0.0);
-var up = vec3(0.0, 1.0, 0.0);
-
-//var projectionMatrix = ortho(-5.0, 5.0, -5.0, 5.0, -25, 25);
+// Transformation matrices
 var projectionMatrix = perspective(45.0, 1, 1, -1);
 var modelMatrixLoc, viewMatrixLoc, projectionMatrixLoc;
 var cameraPositionLoc;
@@ -39,6 +31,10 @@ var lightAmbient = vec4(0.3, 0.3, 0.3, 1.0);
 var lightDiffuse = vec4(0.8, 0.8, 0.8, 1.0);
 var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0)
 var materialShininess = 20.0;
+
+// Create camera object and update function
+var camera = cameraCreate();
+var displayCameraUpdate = function() {};
 
 // Initialize window
 window.onload = function init() {
@@ -122,7 +118,11 @@ window.onload = function init() {
 // Control elements
 function initializeHandlers() {
 
-  var controlCameraRotation = document.getElementById("camera-rotate");
+  var controlCameraAutoRotation = document.getElementById("camera-auto-rotate");
+  var controlCameraRotation = document.getElementById("camera-rotation");
+  var controlCameraRadius = document.getElementById("camera-radius");
+  var controlCameraAngle = document.getElementById("camera-angle");
+
   var controlObjectAdd = document.getElementById("object-add");
   var controlObjectList = document.getElementById("object-list");
   var controlObjectType = document.getElementById("object-type");
@@ -140,8 +140,23 @@ function initializeHandlers() {
   var controlScaleY = document.getElementById("scale-y");
   var controlScaleZ = document.getElementById("scale-z");
 
-  controlCameraRotation.onclick = function() {
-    cameraRotate = !cameraRotate;
+  controlCameraAutoRotation.onclick = function() {
+    camera.autoRotate = !camera.autoRotate;
+  }
+
+  controlCameraRotation.oninput = function(event) {
+    camera.rotation = parseFloat(event.target.value);
+    camera.updatePosition();
+  }
+
+  controlCameraRadius.oninput = function(event) {
+    camera.radius = parseFloat(event.target.value);
+    camera.updatePosition();
+  }
+
+  controlCameraAngle.oninput = function(event) {
+    camera.angle = parseFloat(event.target.value);
+    camera.updatePosition();
   }
 
   controlObjectAdd.onclick = function() {
@@ -238,6 +253,36 @@ function initializeHandlers() {
     objects[idx].scaleZ = event.target.value;
     objects[idx].updateTransform();
   }
+
+  displayCameraUpdate = function() {
+    controlCameraRotation.value = camera.rotation;
+  }
+}
+
+function cameraCreate() {
+  var camera = {
+    autoRotate: true,
+    rotation: 0.0,
+    radius: 30,
+    angle: 67.0,
+    eye: vec3(),
+    at: vec3(0.0, 0.0, 0.0),
+    up: vec3(0.0, 1.0, 0.0),
+
+    updatePosition: function() {
+      if(camera.rotation > 180.0) {
+        camera.rotation = -180.0;
+      }
+      var rotationRadians = camera.rotation * (Math.PI / 180);
+      var angleRadians = camera.angle * (Math.PI / 180);
+      var x = camera.radius * Math.sin(angleRadians) * Math.sin(rotationRadians);
+      var z = camera.radius * Math.sin(angleRadians) * Math.cos(rotationRadians);
+      var y = camera.radius * Math.cos(angleRadians);
+      camera.eye = vec3(x, y, z);
+    }
+  }
+  camera.updatePosition();
+  return camera;
 }
 
 function objectCreate() {
@@ -280,12 +325,14 @@ function objectCreate() {
 function render() {
 
   // Update camera
-  if(cameraRotate) { cameraAngle += 0.005; }
-  if(cameraAngle > 2*Math.PI) { cameraAngle = 0.0; }
-  eye = vec3(cameraRadius*Math.cos(cameraAngle), 10, cameraRadius*Math.sin(cameraAngle));
-  var cameraMatrix = lookAt(eye, at , up);
+  if(camera.autoRotate) {
+    camera.rotation += 0.25;
+    camera.updatePosition();
+    displayCameraUpdate();
+  }
+  var cameraMatrix = lookAt(camera.eye, camera.at, camera.up);
   gl.uniformMatrix4fv(viewMatrixLoc, false, flatten(cameraMatrix));
-  gl.uniform4fv(cameraPositionLoc, flatten(vec4(eye)));
+  gl.uniform4fv(cameraPositionLoc, flatten(vec4(camera.eye)));
 
   // Clear screen
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

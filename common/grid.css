@@ -51,3 +51,20 @@
 body {
   font-family: "Helvetica";
 }
+
+.border {
+  padding: 2px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: grey;
+}
+
+.section {
+  margin-top: 10px;
+  border-top: solid 1px;
+  border-color: grey;
+}
+
+.section-header {
+  margin-top: 0px;
+}
