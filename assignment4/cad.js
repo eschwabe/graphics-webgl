@@ -290,7 +290,7 @@ function objectCreate() {
     type: 0,
     vBuffer: vBufferSphere,
     numVerticies: numPointsSphere,
-    color: 0,
+    color: 3,
     translateX: 0,
     translateY: 0,
     translateZ: 0,
@@ -379,27 +379,27 @@ function baseGrid() {
 // Generate triangles for a unit-size cylinder
 function unitCylinder() {
   var cylinder = [];
-  var divisions = 30;
+  var divisions = 100;
   var r = 0.5;
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
     var ntheta = (i+1)/divisions * 2*Math.PI;
     // cone base center to edge
-    cylinder.push(vec4(0, 0, 0));
-    cylinder.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
+    cylinder.push(vec4(0, -r, 0));
+    cylinder.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
     // cone top center to edge
-    cylinder.push(vec4(0, r*2, 0));
-    cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), r*2, r*Math.sin(ntheta)));
+    cylinder.push(vec4(0, r, 0));
+    cylinder.push(vec4(r*Math.cos(theta), r, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), r, r*Math.sin(ntheta)));
     // cone base edge to cone top
-    cylinder.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
-    cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
+    cylinder.push(vec4(r*Math.cos(theta), r, r*Math.sin(theta)));
     // cone top edge to cone bottom
-    cylinder.push(vec4(r*Math.cos(theta), r*2, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), r*2, r*Math.sin(ntheta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
+    cylinder.push(vec4(r*Math.cos(theta), r, r*Math.sin(theta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), r, r*Math.sin(ntheta)));
+    cylinder.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
   }
   return cylinder;
 }
@@ -407,19 +407,19 @@ function unitCylinder() {
 // Generate triangles for a unit-size cone
 function unitCone() {
   var cone = [];
-  var divisions = 30;
+  var divisions = 100;
   var r = 0.5;
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
     var ntheta = (i+1)/divisions * 2*Math.PI;
     // cone base center to edge
-    cone.push(vec4(0, 0, 0));
-    cone.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    cone.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
+    cone.push(vec4(0, -r, 0));
+    cone.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
+    cone.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
     // cone base edge to cone top
-    cone.push(vec4(r*Math.cos(theta), 0, r*Math.sin(theta)));
-    cone.push(vec4(r*Math.cos(ntheta), 0, r*Math.sin(ntheta)));
-    cone.push(vec4(0, r*2, 0));
+    cone.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
+    cone.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
+    cone.push(vec4(0, r, 0));
   }
   return cone;
 }
