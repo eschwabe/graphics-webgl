@@ -153,10 +153,10 @@ function initializeHandlers() {
   var controlLightZ = document.getElementById("light-z");
 
   // Camera
-  displayCameraUpdate = function() {
+  displayCameraUpdate = function(event) {
     controlCameraRotation.value = camera.rotation;
   };
-  controlCameraAutoRotation.onclick = function() {
+  controlCameraAutoRotation.onclick = function(event) {
     camera.autoRotate = !camera.autoRotate;
   };
   controlCameraRotation.oninput = function(event) {
@@ -173,14 +173,14 @@ function initializeHandlers() {
   };
 
   // Objects
-  controlObjectAdd.onclick = function() {
+  controlObjectAdd.onclick = function(event) {
     objects.push(objectCreate());
     var idx = objects.length-1;
     controlObjectList[controlObjectList.options.length] = new Option('Object '+(idx+1), idx);
     controlObjectList.value = idx;
     controlObjectList.onchange();
   };
-  controlObjectList.onchange = function() {
+  controlObjectList.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     controlObjectType.value = objects[idx].type;
     controlObjectColor.value = objects[idx].color;
@@ -273,7 +273,7 @@ function initializeHandlers() {
     controlLightY.value = lights[idx].position[1];
     controlLightZ.value = lights[idx].position[2];
   };
-  controlLightEnable.onclick = function() {
+  controlLightEnable.onclick = function(event) {
     var idx = controlLightList[controlLightList.selectedIndex].value;
     lights[idx].enabled = event.target.checked;
     gl.uniform1i(lights[idx].enabledLoc, lights[idx].enabled);
