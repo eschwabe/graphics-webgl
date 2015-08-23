@@ -32,6 +32,7 @@ var displayCameraUpdate = function() {};
 
 // Lights
 var lights = [ lightCreate(), lightCreate() ];
+lights[1].enabled = false;
 
 // Initialize window
 window.onload = function init() {
