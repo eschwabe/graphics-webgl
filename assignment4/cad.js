@@ -6,7 +6,7 @@ var gl;
 var objects = [];
 
 var colors = [
-  vec4( 0.0, 0.0, 0.0, 1.0 ),  // black
+  vec4( 0.1, 0.1, 0.1, 1.0 ),  // black
   vec4( 1.0, 0.0, 0.0, 1.0 ),  // red
   vec4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
   vec4( 0.0, 1.0, 0.0, 1.0 ),  // green
@@ -28,9 +28,9 @@ var cameraPositionLoc;
 
 var lightPosition = vec4(25.0, 25.0, 25.0, 0.0);
 var lightAmbient = vec4(0.3, 0.3, 0.3, 1.0);
-var lightDiffuse = vec4(0.8, 0.8, 0.8, 1.0);
+var lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0)
-var materialShininess = 20.0;
+var materialShininess = 30.0;
 
 // Create camera object and update function
 var camera = cameraCreate();
