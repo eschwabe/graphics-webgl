@@ -457,7 +457,7 @@ function baseGrid() {
 // Generate triangles for a unit-size cylinder
 function unitCylinder() {
   var cylinder = [];
-  var divisions = 100;
+  var divisions = 50;
   var r = 0.5;
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
@@ -470,14 +470,22 @@ function unitCylinder() {
     cylinder.push(vec4(0, r, 0));
     cylinder.push(vec4(r*Math.cos(theta), r, r*Math.sin(theta)));
     cylinder.push(vec4(r*Math.cos(ntheta), r, r*Math.sin(ntheta)));
-    // cone base edge to cone top
-    cylinder.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
-    cylinder.push(vec4(r*Math.cos(theta), r, r*Math.sin(theta)));
-    // cone top edge to cone bottom
-    cylinder.push(vec4(r*Math.cos(theta), r, r*Math.sin(theta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), r, r*Math.sin(ntheta)));
-    cylinder.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
+
+    // cone sides
+    for(var j = 0; j < divisions; ++j) {
+      var p1 = (divisions-j)/divisions;
+      var p2 = (divisions-(j+1))/divisions;
+      var y1 = r - (2*r * p1);
+      var y2 = r - (2*r * p2);
+
+      cylinder.push(vec4(r*Math.cos(theta), y1, r*Math.sin(theta)));
+      cylinder.push(vec4(r*Math.cos(ntheta), y1, r*Math.sin(ntheta)));
+      cylinder.push(vec4(r*Math.cos(theta), y2, r*Math.sin(theta)));
+
+      cylinder.push(vec4(r*Math.cos(theta), y2, r*Math.sin(theta)));
+      cylinder.push(vec4(r*Math.cos(ntheta), y2, r*Math.sin(ntheta)));
+      cylinder.push(vec4(r*Math.cos(ntheta), y1, r*Math.sin(ntheta)));
+    }
   }
   return cylinder;
 }
@@ -485,7 +493,7 @@ function unitCylinder() {
 // Generate triangles for a unit-size cone
 function unitCone() {
   var cone = [];
-  var divisions = 100;
+  var divisions = 50;
   var r = 0.5;
   for(var i = 0; i < divisions; ++i) {
     var theta = i/divisions * 2*Math.PI;
@@ -495,9 +503,22 @@ function unitCone() {
     cone.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
     cone.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
     // cone base edge to cone top
-    cone.push(vec4(r*Math.cos(theta), -r, r*Math.sin(theta)));
-    cone.push(vec4(r*Math.cos(ntheta), -r, r*Math.sin(ntheta)));
-    cone.push(vec4(0, r, 0));
+    for(var j = 0; j < divisions; ++j) {
+      var p1 = (divisions-j)/divisions;
+      var p2 = (divisions-(j+1))/divisions;
+      var r1 = r * p1;
+      var r2 = r * p2;
+      var y1 = r - (2*r * p1);
+      var y2 = r - (2*r * p2);
+
+      cone.push(vec4(r1*Math.cos(theta), y1, r1*Math.sin(theta)));
+      cone.push(vec4(r1*Math.cos(ntheta), y1, r1*Math.sin(ntheta)));
+      cone.push(vec4(r2*Math.cos(theta), y2, r2*Math.sin(theta)));
+
+      cone.push(vec4(r1*Math.cos(ntheta), y1, r1*Math.sin(ntheta)));
+      cone.push(vec4(r2*Math.cos(ntheta), y2, r2*Math.sin(ntheta)));
+      cone.push(vec4(r2*Math.cos(theta), y2, r2*Math.sin(theta)));
+    }
   }
   return cone;
 }
