@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title>Assignment 5: Texture Mapping</title>
+
+  <link rel="stylesheet" href="../common/grid.css" />
+
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec4 vPosition;
+    uniform vec4 vColor;
+    uniform vec4 cameraPosition;
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
+    uniform mat4 projectionMatrix;
+    uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+    uniform vec4 lightPosition1, lightPosition2;
+    uniform int lightEnabled1, lightEnabled2;
+    uniform float shininess;
+    varying vec4 fColor;
+
+    // Compute color component for a single light source
+    vec4 computeLightComponent(
+      vec3 P,
+      vec3 N,
+      vec4 lightPosition) {
+
+      // vector from vertex position to light source
+      vec3 L = normalize(lightPosition.xyz - P);
+
+      // vector from the vertex position to the eye
+      ///vec3 E = normalize(vPosition * viewMatrix * modelMatrix).xyz;
+      vec3 E = normalize(cameraPosition.xyz - P);
+
+      // halfway vector
+      vec3 H = normalize(L + E);
+
+      // Set ambient light
+      vec4 ambient = ambientProduct * vColor;
+
+      // Compute diffuse light
+      float Kd = max( dot(L, N), 0.0 );
+      vec4 diffuse = Kd * diffuseProduct * vColor;
+
+      // Compute specular light
+      float Ks = pow( max(dot(N, H), 0.0), shininess );
+      vec4 specular = Ks * specularProduct;
+
+      // Compute color
+      vec4 color = ambient + diffuse + specular;
+      color.a = 1.0;
+
+      return color;
+    }
+
+    void main() {
+
+      // Assume normal is same as untransformed vertex position
+      vec4 vNormal = normalize(vPosition);
+      vNormal.w = 0.0;
+
+      // transform vertex position and normal into model coordinates
+      vec3 P = (modelMatrix * vPosition).xyz;
+      vec3 N = normalize(modelMatrix * vNormal).xyz;
+
+      // Compute vertex position
+      gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;
+
+      // Compute each color component and sum
+      vec4 lightColor1 = vec4(0.1,0.1,0.1,1) * vColor;
+      vec4 lightColor2 = vec4(0.1,0.1,0.1,1) * vColor;
+      if(lightEnabled1 != 0) {
+        lightColor1 = computeLightComponent(P, N, lightPosition1);
+      }
+      if(lightEnabled2 != 0) {
+        lightColor2 = computeLightComponent(P, N, lightPosition2);
+      }
+      fColor = lightColor1 + lightColor2;
+    }
+  </script>
+
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+    varying vec4 fColor;
+    void main() {
+      gl_FragColor = fColor;
+    }
+  </script>
+
+  <script type="text/javascript" src="../common/webgl-utils.js"></script>
+  <script type="text/javascript" src="../common/initShaders.js"></script>
+  <script type="text/javascript" src="../common/MV.js"></script>
+  <script type="text/javascript" src="cad.js"></script>
+
+</head>
+
+<body>
+<div class="container">
+
+  <h2>Assignment 5: Texture Mapping</h2>
+
+  <div class="first">
+    <!-- Controls -->
+    <div class="border grid4">
+
+      <!-- Camera -->
+      <div class="first">
+        <div class="grid4">
+          <h3>Camera</h3>
+          <div class="first">
+            <div class="grid1">
+              <strong>Auto</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-auto-rotate" type="checkbox" checked></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Rotate</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-rotation" style="width: 100%;" type="range" value="0" step="0.1" min="-180" max="180"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Zoom</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-radius" style="width: 100%;" type="range" value="30" step="0.1" min="5" max="100"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Angle</strong>
+            </div>
+            <div class="grid3">
+              <input id="camera-angle" style="width: 100%;" type="range" value="67" step="0.1" min="0.1" max="179"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Objects -->
+      <div class="first section">
+        <div class="grid4">
+          <h3>Objects</h3>
+          <div class="first">
+            <div class="grid1">
+              <strong>Create</strong>
+            </div>
+            <div class="grid3">
+              <button id="object-add">Add New Object</button>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Select</strong>
+            </div>
+            <div class="grid3">
+              <select id="object-list">
+                <option value="0">Object 1</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Attributes</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>Shape</strong>
+            </div>
+            <div class="grid3">
+              <select id="object-type">
+                <option value="0">Sphere</option>
+                <option value="1">Cone</option>
+                <option value="2">Cylinder</option>
+              </select>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Color</strong>
+            </div>
+            <div class="grid3">
+              <select id="object-color">
+                <option value="0">Black</option>
+                <option value="1">Red</option>
+                <option value="2">Yellow</option>
+                <option value="3" selected>Green</option>
+                <option value="4">Blue</option>
+                <option value="5">Magenta</option>
+                <option value="6">Cyan</option>
+                <option value="7">Grey</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Translate</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="translate-x" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="translate-y" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="translate-z" style="width: 100%;" type="range" step=".25" min="-10" max="10"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Rotate</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="rotate-x" style="width: 100%;" type="range" min="-180" max="180"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="rotate-y" style="width: 100%;" type="range" min="-180" max="180"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="rotate-z" style="width: 100%;" type="range" min="-180" max="180"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Scale</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="scale-x" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="scale-y" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="scale-z" style="width: 100%;" type="range" value="1" step="0.1" min="1" max="5"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lighting -->
+      <div class="first section">
+        <div class="grid4">
+          <h3>Lighting</h3>
+          <div class="first">
+            <div class="grid1">
+              <strong>Select</strong>
+            </div>
+            <div class="grid3">
+              <select id="light-list">
+                <option value="0">Light 1</option>
+                <option value="1">Light 2</option>
+              </select>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Enable</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-enabled" type="checkbox" checked></input>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="first">
+        <div class="grid4">
+          <h4 class="section-header">Position</h4>
+          <div class="first">
+            <div class="grid1">
+              <strong>X</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-x" style="width: 100%;" type="range" value="25" step="0.1" min="-50" max="50"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Y</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-y" style="width: 100%;" type="range" value="25" step="0.1" min="-50" max="50"></input>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Z</strong>
+            </div>
+            <div class="grid3">
+              <input id="light-z" style="width: 100%;" type="range" value="25" step="0.1" min="-50" max="50"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- End Controls -->
+    </div>
+
+    <!-- Display -->
+    <div class="grid8">
+      <canvas id="gl-canvas" class="border" width="1024" height="1024">
+        Canvas Not Supported!
+      </canvas>
+    </div>
+
+  </div>
+</div>
+
+</body>
+
+</html>
