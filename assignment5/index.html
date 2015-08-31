@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="../common/grid.css" />
 
   <script id="vertex-shader" type="x-shader/x-vertex">
+
+    #define M_PI 3.1415926535897932384626433832795
+
     attribute vec4 vPosition;
     uniform vec4 vColor;
     uniform vec4 cameraPosition;
@@ -19,6 +22,7 @@
     uniform int lightEnabled1, lightEnabled2;
     uniform float shininess;
     varying vec4 fColor;
+    varying vec2 fTextureCoords;
 
     // Compute color component for a single light source
     vec4 computeLightComponent(
@@ -77,14 +81,35 @@
         lightColor2 = computeLightComponent(P, N, lightPosition2);
       }
       fColor = lightColor1 + lightColor2;
+
+      // Compute texture coordinates
+      /*
+      float polarAngle = acos(vPosition.y / sqrt(vPosition.x*vPosition.x + vPosition.y*vPosition.y + vPosition.z*vPosition.z));
+      float azimutalAngle = atan(vPosition.x / vPosition.z);
+      fTextureCoords = vec2((azimutalAngle+M_PI)/(2.0*M_PI), (polarAngle)/(M_PI));
+      */
+
+      float theta = atan(-vPosition.z, vPosition.x);
+      float phi = acos(-vPosition.y);
+      float u = (theta + M_PI) / (2.0 * M_PI);
+      float v = phi / M_PI;
+      fTextureCoords = vec2(u, v);
     }
   </script>
 
   <script id="fragment-shader" type="x-shader/x-fragment">
     precision mediump float;
     varying vec4 fColor;
+    varying vec2 fTextureCoords;
+    uniform sampler2D texture0;
+
     void main() {
-      gl_FragColor = fColor;
+      //gl_FragColor = fColor;
+      if(fTextureCoords.x > 1.0 || fTextureCoords.y > 1.0 || fTextureCoords.x < 0.0 || fTextureCoords.y < 0.0) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      } else {
+        gl_FragColor = texture2D(texture0, fTextureCoords);
+      }
     }
   </script>
 

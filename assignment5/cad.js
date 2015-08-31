@@ -109,8 +109,9 @@ window.onload = function init() {
   lights[1].enabledLoc = gl.getUniformLocation(program, "lightEnabled2");
   gl.uniform1i(lights[1].enabledLoc, lights[1].enabled);
 
-  // Setup color attribute
+  // Setup color attribute and textures
   vColor = gl.getUniformLocation(program, "vColor");
+  configureTextures();
 
   // Initialize first object
   objects.push(objectCreate());
@@ -119,6 +120,20 @@ window.onload = function init() {
   initializeHandlers();
 
   render();
+}
+
+// Setup textures
+function configureTextures() {
+    var texture0 = gl.createTexture();
+    var checkerboardSize = 128;
+    var checkerboardImage = generateCheckboardImage(checkerboardSize);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture0);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, checkerboardSize, checkerboardSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, checkerboardImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 }
 
 // Control elements
@@ -439,6 +454,21 @@ function render() {
   window.requestAnimFrame(render);
 }
 
+// Create a checkerboard pattern using floats
+function generateCheckboardImage(size) {
+  var image = new Uint8Array(4*size*size);
+  for(var i = 0; i < size; ++i) {
+    for (var j = 0; j < size; ++j) {
+      var c = (((i & 0x8) === 0) ^ ((j & 0x8) === 0)) * 255;
+      image[(i*size*4)+(j*4)+0] = c;
+      image[(i*size*4)+(j*4)+1] = c;
+      image[(i*size*4)+(j*4)+2] = c;
+      image[(i*size*4)+(j*4)+3] = 255;
+    }
+  }
+  return image;
+}
+
 // Generate lines for the base grid (10x10)
 function baseGrid() {
   var grid = [];
@@ -553,18 +583,24 @@ function divideTriangle(points, a, b, c, count) {
 
 // Generate a unit-size sphere shape
 function unitSphere() {
-  var divisions = 5;
+  var divisions = 7;
   var sphere = [];
 
-  var va = vec4(0.0, 0.0, -1.0);
-  var vb = vec4(0.0, 0.942809, 0.333333);
-  var vc = vec4(-0.816497, -0.471405, 0.333333);
-  var vd = vec4(0.816497, -0.471405, 0.333333);
+  var p0 = vec4(0.0, 1.0, 0.0);
+  var p1 = vec4(0.0, 0.0, 1.0);
+  var p2 = vec4(1.0, 0.0, 0.0);
+  var p3 = vec4(0.0, 0.0, -1.0);
+  var p4 = vec4(-1.0, 0.0, 0.0);
+  var p5 = vec4(0.0, -1.0, 0.0);
 
-  divideTriangle(sphere, va, vb, vc, divisions);
-  divideTriangle(sphere, vd, vc, vb, divisions);
-  divideTriangle(sphere, va, vd, vb, divisions);
-  divideTriangle(sphere, va, vc, vd, divisions);
+  divideTriangle(sphere, p0, p1, p2, divisions);
+  divideTriangle(sphere, p0, p1, p4, divisions);
+  divideTriangle(sphere, p0, p3, p2, divisions);
+  divideTriangle(sphere, p0, p3, p4, divisions);
+  divideTriangle(sphere, p5, p1, p2, divisions);
+  divideTriangle(sphere, p5, p1, p4, divisions);
+  divideTriangle(sphere, p5, p3, p2, divisions);
+  divideTriangle(sphere, p5, p3, p4, divisions);
 
   return sphere;
 }
