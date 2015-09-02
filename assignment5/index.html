@@ -9,9 +9,8 @@
 
   <script id="vertex-shader" type="x-shader/x-vertex">
 
-    #define M_PI 3.1415926535897932384626433832795
-
     attribute vec4 vPosition;
+    attribute vec2 vTextureCoordinate;
     uniform vec4 vColor;
     uniform vec4 cameraPosition;
     uniform mat4 modelMatrix;
@@ -22,7 +21,7 @@
     uniform int lightEnabled1, lightEnabled2;
     uniform float shininess;
     varying vec4 fColor;
-    varying vec2 fTextureCoords;
+    varying vec2 fTextureCoordinate;
 
     // Compute color component for a single light source
     vec4 computeLightComponent(
@@ -34,7 +33,6 @@
       vec3 L = normalize(lightPosition.xyz - P);
 
       // vector from the vertex position to the eye
-      ///vec3 E = normalize(vPosition * viewMatrix * modelMatrix).xyz;
       vec3 E = normalize(cameraPosition.xyz - P);
 
       // halfway vector
@@ -80,25 +78,21 @@
       if(lightEnabled2 != 0) {
         lightColor2 = computeLightComponent(P, N, lightPosition2);
       }
-      fColor = lightColor1 + lightColor2;
 
-      // Compute texture coordinates
-      float theta = atan(-vPosition.z, vPosition.x);
-      float phi = acos(-vPosition.y);
-      float u = (theta + M_PI) / (2.0 * M_PI);
-      float v = phi / M_PI;
-      fTextureCoords = vec2(u, v);
+      // Output colors and texture to fragment shader
+      fColor = lightColor1 + lightColor2;
+      fTextureCoordinate = vTextureCoordinate;
     }
   </script>
 
   <script id="fragment-shader" type="x-shader/x-fragment">
     precision mediump float;
     varying vec4 fColor;
-    varying vec2 fTextureCoords;
+    varying vec2 fTextureCoordinate;
     uniform sampler2D texture0;
 
     void main() {
-      gl_FragColor = fColor*texture2D(texture0, fTextureCoords);
+      gl_FragColor = fColor * texture2D(texture0, fTextureCoordinate);
     }
   </script>
 
@@ -111,6 +105,8 @@
 
 <body>
 <div class="container">
+
+  <img id="earth-texture" src="nasa-earth-512.jpg" hidden></img>
 
   <h2>Assignment 5: Texture Mapping</h2>
 
@@ -206,11 +202,12 @@
                 <option value="0">Black</option>
                 <option value="1">Red</option>
                 <option value="2">Yellow</option>
-                <option value="3" selected>Green</option>
+                <option value="3">Green</option>
                 <option value="4">Blue</option>
                 <option value="5">Magenta</option>
                 <option value="6">Cyan</option>
                 <option value="7">Grey</option>
+                <option value="8" selected>White</option>
               </select>
             </div>
           </div>

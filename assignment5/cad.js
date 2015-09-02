@@ -13,13 +13,15 @@ var colors = [
   vec4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
   vec4( 0.0, 1.0, 1.0, 1.0 ),  // cyan
   vec4( 0.5, 0.5, 0.5, 1.0 ),  // grey
+  vec4( 1.0, 1.0, 1.0, 1.0 ),  // white
 ];
 
 // Object variables
 var objects = [];
 var numPointsGrid, numPointsCone, numPointsCylinder, numPointsSphere;
 var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
-var vPosition, vColor;
+var tBufferCone, tBufferCylinder, tBufferSphere;
+var vPosition, vColor, vTextureCoordinate;
 
 // Transformation matrices
 var projectionMatrix = perspective(45.0, 1, 1, -1);
@@ -52,35 +54,50 @@ window.onload = function init() {
   var program = initShaders(gl, "vertex-shader", "fragment-shader");
   gl.useProgram(program);
 
-  // Create object vertices
-  vBufferGrid = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
+  // Grid vertices
   var grid = baseGrid();
   numPointsGrid = grid.length;
+  vBufferGrid = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(grid), gl.STATIC_DRAW);
 
-  vBufferCone = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCone);
+  // Cone vertices
   var cone = unitCone();
   numPointsCone = cone.length;
+  vBufferCone = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCone);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(cone), gl.STATIC_DRAW);
+  tBufferCone = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, tBufferCone);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(generateTextureCoordinateBuffer(cone)), gl.STATIC_DRAW);
 
-  vBufferCylinder = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCylinder);
+  // Cylinder vertices
   var cylinder = unitCylinder();
   numPointsCylinder = cylinder.length;
+  vBufferCylinder = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferCylinder);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(cylinder), gl.STATIC_DRAW);
+  tBufferCylinder = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, tBufferCylinder);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(generateTextureCoordinateBuffer(cylinder)), gl.STATIC_DRAW);
 
-  vBufferSphere = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferSphere);
+  // Sphere vertices
   var sphere = unitSphere();
   numPointsSphere = sphere.length;
+  vBufferSphere = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBufferSphere);
   gl.bufferData(gl.ARRAY_BUFFER, flatten(sphere), gl.STATIC_DRAW);
+  tBufferSphere = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, tBufferSphere);
+  gl.bufferData(gl.ARRAY_BUFFER, flatten(generateTextureCoordinateBuffer(sphere)), gl.STATIC_DRAW);
 
   // Associate position vertices with shader input
   vPosition = gl.getAttribLocation(program, "vPosition");
-  gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(vPosition);
+
+  // Associate texture coordinates with variable
+  vTextureCoordinate = gl.getAttribLocation(program, "vTextureCoordinate");
+  gl.enableVertexAttribArray(vTextureCoordinate);
 
   // Set model and projection matrices
   cameraPositionLoc = gl.getUniformLocation(program, "cameraPosition");
@@ -127,10 +144,12 @@ function configureTextures() {
     var texture0 = gl.createTexture();
     var checkerboardSize = 128;
     var checkerboardImage = generateCheckboardImage(checkerboardSize);
+    var earthImage = document.getElementById("earth-texture");
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture0);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, checkerboardSize, checkerboardSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, checkerboardImage);
+    //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, checkerboardSize, checkerboardSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, checkerboardImage);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, earthImage);
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -213,14 +232,17 @@ function initializeHandlers() {
     var element = event.target;
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].type = element.value;
-    if(element.value == 0) {
+    if(element.value === 0) {
       objects[idx].vBuffer = vBufferSphere;
+      objects[idx].tBuffer = tBufferSphere;
       objects[idx].numVerticies = numPointsSphere;
     } else if(element.value == 1) {
       objects[idx].vBuffer = vBufferCone;
+      objects[idx].tBuffer = tBufferCone;
       objects[idx].numVerticies = numPointsCone;
     } else if(element.value == 2) {
       objects[idx].vBuffer = vBufferCylinder;
+      objects[idx].tBuffer = tBufferCylinder;
       objects[idx].numVerticies = numPointsCylinder;
     }
   };
@@ -350,7 +372,7 @@ function lightCreate() {
     position: vec4(25.0, 25.0, 25.0, 0.0),
     positionLoc: null,
     enabledLoc: null,
-    objectColor: 2,
+    objectColor: 0,
     matTransform: mat4(),
     updateTransform: function () {
       var matT = translate(light.position[0], light.position[1], light.position[2]);
@@ -367,7 +389,8 @@ function objectCreate() {
     type: 0,
     vBuffer: vBufferSphere,
     numVerticies: numPointsSphere,
-    color: 3,
+    tBuffer: tBufferSphere,
+    color: 8,
     translateX: 0,
     translateY: 0,
     translateZ: 0,
@@ -419,6 +442,7 @@ function render() {
   gl.uniform4fv(vColor, flatten(colors[0]));
   gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+  gl.disableVertexAttribArray(vTextureCoordinate);
   gl.drawArrays(gl.LINES, 0, numPointsGrid);
 
   // Draw Lights
@@ -433,6 +457,7 @@ function render() {
       // Set object vertex buffer
       gl.bindBuffer(gl.ARRAY_BUFFER, vBufferSphere);
       gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+      gl.disableVertexAttribArray(vTextureCoordinate);
       gl.drawArrays(gl.TRIANGLES, 0, numPointsSphere);
     }
   }
@@ -448,6 +473,9 @@ function render() {
     // Set object vertex buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].vBuffer);
     gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].tBuffer);
+    gl.vertexAttribPointer(vTextureCoordinate, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(vTextureCoordinate);
     gl.drawArrays(gl.TRIANGLES, 0, objects[i].numVerticies);
   }
 
@@ -467,6 +495,45 @@ function generateCheckboardImage(size) {
     }
   }
   return image;
+}
+
+// Compute texture u,v coordinates for a point
+function computeTextureCoordinates(point, preventWrap) {
+    var theta = Math.atan2(-point[2], point[0]);
+    var phi = Math.acos(-point[1]);
+    var u = (theta + Math.PI) / (2.0 * Math.PI);
+    var v = phi / Math.PI;
+
+    if (preventWrap && u < 0.1) {
+      u = 1.0;
+    }
+    return vec2(u, v);
+}
+
+// Generate texture coordinates for a vertex buffer
+function generateTextureCoordinateBuffer(vertices) {
+  if (vertices.length % 3 !== 0) {
+    throw "vertex array not a multiple of 3";
+  }
+  var index = 0;
+  var coordinates = [];
+  while (index < vertices.length) {
+    var p1 = vertices[index++];
+    var p2 = vertices[index++];
+    var p3 = vertices[index++];
+    var preventWrap = false;
+
+    // test if triangle points wrap around texture
+    if (
+      ((p1[2] < 0.0 || p2[2] < 0.0 || p3[2] < 0.0) &&
+      (p1[2] >= 0.0 || p2[2] >= 0.0 || p3[2] >= 0.0)) ) {
+        preventWrap = true;
+    }
+    coordinates.push(computeTextureCoordinates(p1, preventWrap));
+    coordinates.push(computeTextureCoordinates(p2, preventWrap));
+    coordinates.push(computeTextureCoordinates(p3, preventWrap));
+  }
+  return coordinates;
 }
 
 // Generate lines for the base grid (10x10)
@@ -583,7 +650,7 @@ function divideTriangle(points, a, b, c, count) {
 
 // Generate a unit-size sphere shape
 function unitSphere() {
-  var divisions = 7;
+  var divisions = 5;
   var sphere = [];
 
   var p0 = vec4(0.0, 1.0, 0.0);
