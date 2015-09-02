@@ -89,10 +89,15 @@
     precision mediump float;
     varying vec4 fColor;
     varying vec2 fTextureCoordinate;
-    uniform sampler2D texture0;
+    uniform int textureEnabled;
+    uniform sampler2D texture;
 
     void main() {
-      gl_FragColor = fColor * texture2D(texture0, fTextureCoordinate);
+      if (textureEnabled != 0) {
+        gl_FragColor = fColor * texture2D(texture, fTextureCoordinate);
+      } else {
+        gl_FragColor = fColor;
+      }
     }
   </script>
 
@@ -187,7 +192,7 @@
             </div>
             <div class="grid3">
               <select id="object-type">
-                <option value="0">Sphere</option>
+                <option value="0" selected>Sphere</option>
                 <option value="1">Cone</option>
                 <option value="2">Cylinder</option>
               </select>
@@ -208,6 +213,18 @@
                 <option value="6">Cyan</option>
                 <option value="7">Grey</option>
                 <option value="8" selected>White</option>
+              </select>
+            </div>
+          </div>
+          <div class="first">
+            <div class="grid1">
+              <strong>Texture</strong>
+            </div>
+            <div class="grid3">
+              <select id="object-texture">
+                <option value="0">None</option>
+                <option value="1">Checkerboard</option>
+                <option value="2" selected>Earth</option>
               </select>
             </div>
           </div>

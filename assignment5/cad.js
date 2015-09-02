@@ -23,6 +23,9 @@ var vBufferGrid, vBufferCone, vBufferCylinder, vBufferSphere;
 var tBufferCone, tBufferCylinder, tBufferSphere;
 var vPosition, vColor, vTextureCoordinate;
 
+// Uniform shader variables
+var textureLoc, textureEnabledLoc;
+
 // Transformation matrices
 var projectionMatrix = perspective(45.0, 1, 1, -1);
 var modelMatrixLoc, viewMatrixLoc, projectionMatrixLoc;
@@ -99,6 +102,10 @@ window.onload = function init() {
   vTextureCoordinate = gl.getAttribLocation(program, "vTextureCoordinate");
   gl.enableVertexAttribArray(vTextureCoordinate);
 
+  // Set texture shader variable locations
+  textureLoc = gl.getUniformLocation(program, "texture");
+  textureEnabledLoc = gl.getUniformLocation(program, "textureEnabled");
+
   // Set model and projection matrices
   cameraPositionLoc = gl.getUniformLocation(program, "cameraPosition");
   viewMatrixLoc = gl.getUniformLocation( program, "viewMatrix" );
@@ -141,15 +148,23 @@ window.onload = function init() {
 
 // Setup textures
 function configureTextures() {
-    var texture0 = gl.createTexture();
-    var checkerboardSize = 128;
+    var checkerboardSize = 64;
     var checkerboardImage = generateCheckboardImage(checkerboardSize);
-    var earthImage = document.getElementById("earth-texture");
+    var texture0 = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture0);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, checkerboardSize, checkerboardSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, checkerboardImage);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, earthImage);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, checkerboardSize, checkerboardSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, checkerboardImage);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    var earth = document.getElementById("earth-texture");
+    var texture1 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, texture1);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, earth);
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -167,6 +182,7 @@ function initializeHandlers() {
   var controlObjectList = document.getElementById("object-list");
   var controlObjectType = document.getElementById("object-type");
   var controlObjectColor = document.getElementById("object-color");
+  var controlObjectTexture = document.getElementById("object-texture");
 
   var controlTranslateX = document.getElementById("translate-x");
   var controlTranslateY = document.getElementById("translate-y");
@@ -232,7 +248,7 @@ function initializeHandlers() {
     var element = event.target;
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].type = element.value;
-    if(element.value === 0) {
+    if(element.value == 0) {
       objects[idx].vBuffer = vBufferSphere;
       objects[idx].tBuffer = tBufferSphere;
       objects[idx].numVerticies = numPointsSphere;
@@ -249,6 +265,15 @@ function initializeHandlers() {
   controlObjectColor.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     objects[idx].color = event.target.value;
+  };
+  controlObjectTexture.onchange = function(event) {
+    var idx = controlObjectList[controlObjectList.selectedIndex].value;
+    if (event.target.value == 0) {
+      objects[idx].textureEnabled = false;
+    } else {
+      objects[idx].textureEnabled = true;
+      objects[idx].texture = parseInt(event.target.value) - 1;
+    }
   };
 
   // Translation
@@ -390,6 +415,8 @@ function objectCreate() {
     vBuffer: vBufferSphere,
     numVerticies: numPointsSphere,
     tBuffer: tBufferSphere,
+    texture: 1,
+    textureEnabled: true,
     color: 8,
     translateX: 0,
     translateY: 0,
@@ -476,6 +503,8 @@ function render() {
     gl.bindBuffer(gl.ARRAY_BUFFER, objects[i].tBuffer);
     gl.vertexAttribPointer(vTextureCoordinate, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vTextureCoordinate);
+    gl.uniform1i(textureEnabledLoc, objects[i].textureEnabled);
+    gl.uniform1i(textureLoc, objects[i].texture);
     gl.drawArrays(gl.TRIANGLES, 0, objects[i].numVerticies);
   }
 
