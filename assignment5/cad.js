@@ -150,9 +150,9 @@ window.onload = function init() {
 function configureTextures() {
     var checkerboardSize = 64;
     var checkerboardImage = generateCheckboardImage(checkerboardSize);
-    var texture0 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture0);
+    var texture1 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, texture1);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, checkerboardSize, checkerboardSize, 0, gl.RGBA, gl.UNSIGNED_BYTE, checkerboardImage);
     gl.generateMipmap(gl.TEXTURE_2D);
@@ -160,9 +160,9 @@ function configureTextures() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
     var earth = document.getElementById("earth-texture");
-    var texture1 = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, texture1);
+    var texture2 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, texture2);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, earth);
     gl.generateMipmap(gl.TEXTURE_2D);
@@ -269,11 +269,11 @@ function initializeHandlers() {
   };
   controlObjectTexture.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    if (parseInt(event.target.value) < 0) {
+    objects[idx].texture = parseInt(event.target.value);
+    if (objects[idx].texture == 0) {
       objects[idx].textureEnabled = false;
     } else {
       objects[idx].textureEnabled = true;
-      objects[idx].texture = parseInt(event.target.value);
     }
   };
 
@@ -416,7 +416,7 @@ function objectCreate() {
     vBuffer: vBufferSphere,
     numVerticies: numPointsSphere,
     tBuffer: tBufferSphere,
-    texture: 1,
+    texture: 2,
     textureEnabled: true,
     color: 8,
     translateX: 0,
@@ -471,6 +471,7 @@ function render() {
   gl.bindBuffer(gl.ARRAY_BUFFER, vBufferGrid);
   gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
   gl.disableVertexAttribArray(vTextureCoordinate);
+  gl.uniform1i(textureEnabledLoc, false);
   gl.drawArrays(gl.LINES, 0, numPointsGrid);
 
   // Draw Lights
@@ -486,6 +487,7 @@ function render() {
       gl.bindBuffer(gl.ARRAY_BUFFER, vBufferSphere);
       gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
       gl.disableVertexAttribArray(vTextureCoordinate);
+      gl.uniform1i(textureEnabledLoc, false);
       gl.drawArrays(gl.TRIANGLES, 0, numPointsSphere);
     }
   }
