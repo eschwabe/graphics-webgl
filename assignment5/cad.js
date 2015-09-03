@@ -234,6 +234,7 @@ function initializeHandlers() {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
     controlObjectType.value = objects[idx].type;
     controlObjectColor.value = objects[idx].color;
+    controlObjectTexture.value = objects[idx].texture;
     controlTranslateX.value = objects[idx].translateX;
     controlTranslateY.value = objects[idx].translateY;
     controlTranslateZ.value = objects[idx].translateZ;
@@ -268,11 +269,11 @@ function initializeHandlers() {
   };
   controlObjectTexture.onchange = function(event) {
     var idx = controlObjectList[controlObjectList.selectedIndex].value;
-    if (event.target.value == 0) {
+    if (parseInt(event.target.value) < 0) {
       objects[idx].textureEnabled = false;
     } else {
       objects[idx].textureEnabled = true;
-      objects[idx].texture = parseInt(event.target.value) - 1;
+      objects[idx].texture = parseInt(event.target.value);
     }
   };
 
